@@ -1,0 +1,333 @@
+/* DashboardPage.css - Premium Guest Dashboard Styles for Hotel Ogos */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Viewport structure */
+.dashboard-viewport {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #f6f5f8;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+/* HEADER BAR - Sleek Brand Red with Gold Accent Border */
+.dashboard-header {
+  width: 100%;
+  height: 72px;
+  background-color: #990000; /* Brand Red */
+  border-bottom: 3.5px solid #FFD700; /* Gold Brand divider */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+  color: #ffffff;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.header-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-logo-wrapper {
+  width: 44px;
+  height: 44px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border: 2px solid #FFD700; /* Gold border */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.header-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-weight: 700 !important;
+  font-size: 17px !important;
+  letter-spacing: 1px !important;
+  line-height: 1.2 !important;
+}
+
+.header-subtitle {
+  color: #FFD700 !important; /* Gold text */
+  font-size: 10.5px !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase;
+  font-weight: 600 !important;
+}
+
+.header-user-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-user-welcome {
+  color: #eaeaea !important;
+  font-size: 14.5px !important;
+}
+
+.header-user-welcome strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Outlined logout button */
+.logout-btn {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #eaeaea !important;
+  text-transform: none !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 13.5px !important;
+  padding: 4px 14px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.logout-btn:hover {
+  border-color: #d31027 !important;
+  background-color: rgba(211, 16, 39, 0.1) !important;
+  color: #ffffff !important;
+}
+
+/* MAIN CONTENT AREA */
+.dashboard-main {
+  flex-grow: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+}
+
+.dashboard-content {
+  width: 100%;
+  max-width: 800px;
+}
+
+/* Welcome banner */
+.welcome-banner {
+  margin-bottom: 28px;
+}
+
+.welcome-title {
+  font-size: 32px !important;
+  color: #1a1a1a !important;
+  margin-bottom: 4px !important;
+}
+
+.welcome-subtitle {
+  color: #666666 !important;
+  font-size: 15px !important;
+}
+
+/* Reservation Card Styling */
+.reservation-card {
+  background-color: #ffffff;
+  border-radius: 12px !important;
+  padding: 36px 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+.form-header {
+  font-size: 22px !important;
+  color: #990000 !important;
+  margin-bottom: 12px !important;
+}
+
+.form-divider {
+  margin-bottom: 28px !important;
+  background-color: #f0edf2 !important;
+}
+
+.reservation-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grid form row */
+.form-row {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+}
+
+.form-field-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.field-label {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #333333 !important;
+  margin-bottom: 8px !important;
+  display: block;
+}
+
+.form-icon {
+  color: #888888;
+  margin-right: 8px;
+}
+
+/* Focused icon highlighting when TextField is active */
+.Mui-focused .form-icon {
+  color: #990000;
+}
+
+/* Error warning style */
+.error-text {
+  color: #d31027 !important;
+  font-weight: 500 !important;
+  margin-bottom: 16px !important;
+  display: block;
+}
+
+/* Calculated Price Display Box */
+.price-display-box {
+  background-color: rgba(255, 215, 0, 0.07);
+  border: 1.5px dashed #FFD700;
+  border-radius: 8px;
+  padding: 16px 24px;
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.05);
+}
+
+.price-label {
+  font-weight: 500 !important;
+  color: #555555 !important;
+  font-size: 15.5px !important;
+}
+
+.price-value {
+  color: #990000 !important;
+  font-weight: 700 !important;
+  font-size: 28px !important;
+  letter-spacing: -0.5px;
+}
+
+/* Next button with style-guide hover animations */
+.next-btn {
+  font-family: 'Poppins', sans-serif !important;
+  background-color: #990000 !important;
+  color: #ffffff !important;
+  padding: 12px 0 !important;
+  font-size: 16.5px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  border-radius: 6px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 12px rgba(153, 0, 0, 0.2) !important;
+  align-self: flex-end;
+  width: 180px;
+}
+
+.next-btn:hover {
+  background-color: #d31027 !important;
+  box-shadow: 0 6px 16px rgba(211, 16, 39, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.next-btn:active {
+  transform: translateY(1px);
+}
+
+/* Date & Time Picker Custom Styles & Optimizations */
+input[type="date"],
+input[type="time"] {
+  position: relative;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Hide default browser indicator on the right to prevent duplicate calendar icon */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0; /* Keeps it completely clickable but invisible */
+  cursor: pointer;
+}
+
+/* Align and clean up text edits for date inputs */
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+  display: flex;
+  align-items: center;
+  color: #1a1a1a;
+  padding-left: 4px;
+}
+
+/* Make empty date placeholders look like a standard prompt */
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  opacity: 0.8;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 0 20px;
+  }
+
+  .header-user-welcome {
+    display: none;
+  }
+
+  .reservation-card {
+    padding: 24px 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .price-display-box {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .price-value {
+    font-size: 24px !important;
+  }
+
+  .next-btn {
+    width: 100%;
+    align-self: center;
+  }
+}

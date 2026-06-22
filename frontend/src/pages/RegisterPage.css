@@ -1,0 +1,234 @@
+/* RegisterPage.css - Simplified, clean full-screen split layout for Hotel Ogos Register Page */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+/* Full viewport setup */
+.register-viewport {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  background-color: #ffffff;
+}
+
+/* Full-Screen Split Layout Card */
+.register-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+/* LEFT COLUMN: Red Brand Panel (50% width, centered content) */
+.brand-panel {
+  width: 50%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, #e60000 0%, #990000 100%);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  color: #ffffff;
+  position: relative;
+  text-align: center;
+}
+
+.wordmark-container {
+  width: 100%;
+  max-width: 450px;
+  z-index: 2;
+}
+
+.logo-wrapper {
+  width: 140px;
+  height: 140px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  border: 4px solid #FFD700; /* Gold border to match Sogo palette */
+}
+
+.hotel-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hotel-title {
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 48px !important;
+  color: #ffffff;
+  margin: 0 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase;
+}
+
+.tagline {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 400 !important;
+  color: #ffffff;
+  margin-top: 10px !important;
+  letter-spacing: 0.5px;
+  opacity: 0.95;
+}
+
+.branch-location {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #FFD700 !important; /* Gold color */
+  margin-top: 18px !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase;
+  background-color: rgba(0, 0, 0, 0.25);
+  padding: 6px 16px;
+  border-radius: 20px;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* RIGHT COLUMN: White Form Panel (50% width, centered form) */
+.form-panel {
+  width: 50%;
+  height: 100%;
+  background-color: #ffffff;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.form-content-wrapper {
+  width: 100%;
+  max-width: 380px;
+}
+
+.register-intro {
+  margin-bottom: 24px;
+}
+
+.register-title {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 32px !important;
+  letter-spacing: -0.5px !important;
+  font-weight: 700 !important;
+  margin-bottom: 6px !important;
+  color: #990000 !important;
+}
+
+.register-subtitle {
+  font-family: 'Poppins', sans-serif !important;
+  color: #666666 !important;
+  font-size: 14.5px !important;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.error-text {
+  font-family: 'Poppins', sans-serif !important;
+  color: #d31027 !important;
+  font-weight: 500 !important;
+  margin-bottom: 12px !important;
+  margin-top: -8px !important;
+  display: block;
+}
+
+/* Premium styled register button */
+.register-btn {
+  font-family: 'Poppins', sans-serif !important;
+  background-color: #990000 !important;
+  color: #ffffff !important;
+  padding: 12px !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  border-radius: 6px !important;
+  margin-top: 8px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 12px rgba(153, 0, 0, 0.2) !important;
+}
+
+.register-btn:hover {
+  background-color: #d31027 !important;
+  box-shadow: 0 6px 16px rgba(211, 16, 39, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.register-btn:active {
+  transform: translateY(1px);
+}
+
+.login-link-container {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.login-link-text {
+  font-family: 'Poppins', sans-serif !important;
+  color: #666666 !important;
+  font-size: 14px !important;
+}
+
+.login-link {
+  color: #990000 !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  transition: color 0.2s ease !important;
+}
+
+.login-link:hover {
+  color: #d31027 !important;
+  text-decoration: underline !important;
+}
+
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 868px) {
+  .register-card {
+    flex-direction: column;
+  }
+
+  .brand-panel {
+    width: 100%;
+    height: 35%;
+    padding: 30px 20px;
+    border-bottom: 4px solid #FFD700;
+  }
+
+  .form-panel {
+    width: 100%;
+    height: 65%;
+    padding: 30px 20px;
+  }
+
+  .hotel-title {
+    font-size: 36px !important;
+  }
+
+  .tagline {
+    font-size: 16px !important;
+  }
+
+  .register-title {
+    font-size: 26px !important;
+  }
+}
