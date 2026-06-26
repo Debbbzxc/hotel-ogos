@@ -1,0 +1,540 @@
+/* PaymentPage.css - Premium Payment Page Styles for Hotel Ogos */
+
+.payment-viewport {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #f6f5f8;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+/* HEADER BAR - Consistent Brand Red with Gold Accent Border */
+.payment-header {
+  width: 100%;
+  height: 72px;
+  background-color: #990000;
+  border-bottom: 3.5px solid #FFD700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+  color: #ffffff;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.header-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-logo-wrapper {
+  width: 44px;
+  height: 44px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border: 2px solid #FFD700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.header-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-weight: 700 !important;
+  font-size: 17px !important;
+  letter-spacing: 1px !important;
+  line-height: 1.2 !important;
+}
+
+.header-subtitle {
+  color: #FFD700 !important;
+  font-size: 10.5px !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase;
+  font-weight: 600 !important;
+}
+
+.header-user-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-user-welcome {
+  color: #eaeaea !important;
+  font-size: 14.5px !important;
+}
+
+.header-user-welcome strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.logout-btn {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #eaeaea !important;
+  text-transform: none !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 13.5px !important;
+  padding: 4px 14px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.logout-btn:hover {
+  border-color: #d31027 !important;
+  background-color: rgba(211, 16, 39, 0.1) !important;
+  color: #ffffff !important;
+}
+
+/* MAIN CONTENT AREA */
+.payment-main {
+  flex-grow: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+}
+
+.payment-content {
+  width: 100%;
+  max-width: 680px;
+}
+
+.payment-stack-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+/* Header intro & back link */
+.payment-intro {
+  margin-bottom: 24px;
+}
+
+.back-link-btn {
+  text-transform: none !important;
+  font-family: 'Poppins', sans-serif !important;
+  color: #555555 !important;
+  font-weight: 600 !important;
+  padding: 0 !important;
+  margin-bottom: 12px !important;
+  font-size: 14px !important;
+  transition: color 0.2s ease !important;
+}
+
+.back-link-btn:hover {
+  color: #990000 !important;
+  background: transparent !important;
+}
+
+.payment-title {
+  font-size: 32px !important;
+  color: #1a1a1a !important;
+  margin-bottom: 4px !important;
+}
+
+.payment-subtitle {
+  color: #666666 !important;
+  font-size: 15px !important;
+}
+
+/* CARDS COMMON STYLING */
+.payment-summary-card,
+.payment-form-card {
+  background-color: #ffffff;
+  border-radius: 12px !important;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  box-sizing: border-box;
+}
+
+.payment-summary-card {
+  margin-bottom: 24px;
+}
+
+.payment-summary-card.invoice {
+  margin-bottom: 0;
+}
+
+.summary-header,
+.payment-section-header {
+  font-size: 17px !important;
+  color: #1a1a1a !important;
+  font-weight: 700 !important;
+}
+
+.summary-divider,
+.payment-section-divider {
+  margin: 12px 0 16px 0 !important;
+  background-color: #f0edf2 !important;
+}
+
+/* Left panel summary card details */
+.summary-room-card {
+  display: flex;
+  gap: 16px;
+  background-color: #fbfbfd;
+  border: 1px solid #eae7ec;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 18px;
+}
+
+.summary-room-image {
+  width: 76px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 4px;
+  background-color: #f0edf2;
+}
+
+.summary-room-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.summary-room-name {
+  font-weight: 700 !important;
+  font-size: 14.5px !important;
+  color: #1a1a1a !important;
+  line-height: 1.3 !important;
+}
+
+.summary-room-hours {
+  color: #990000 !important;
+  font-weight: 600 !important;
+  margin-top: 2px !important;
+}
+
+.summary-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+}
+
+.summary-item.notes {
+  flex-direction: column;
+  gap: 4px;
+  background-color: #f5f5f7;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #990000;
+}
+
+.summary-item-label {
+  color: #666666 !important;
+  font-weight: 500 !important;
+}
+
+.summary-item-val {
+  color: #1a1a1a !important;
+  font-weight: 600 !important;
+}
+
+.notes-text {
+  font-weight: 400 !important;
+  font-style: italic;
+  font-size: 12.5px !important;
+}
+
+/* Invoice breakdown block */
+.invoice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.invoice-item {
+  display: flex;
+  justify-content: space-between;
+  color: #555555;
+  font-size: 14.5px;
+}
+
+.invoice-divider {
+  margin: 6px 0 !important;
+  background-color: #f0edf2 !important;
+}
+
+.invoice-item.total {
+  align-items: center;
+}
+
+.total-label {
+  font-weight: 700 !important;
+  color: #1a1a1a !important;
+  font-size: 16px !important;
+}
+
+.total-price {
+  color: #990000 !important;
+  font-weight: 700 !important;
+  font-size: 24px !important;
+}
+
+/* Right panel payment selector block */
+.payment-selectors {
+  margin-bottom: 24px !important;
+}
+
+.selector-btn {
+  width: 100%;
+  height: 72px;
+  background-color: #ffffff;
+  border: 2px solid #e5e4e7;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
+}
+
+.selector-btn:hover {
+  border-color: #b2b2b2;
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+}
+
+.selector-btn.active {
+  border-color: #990000;
+  background-color: rgba(153, 0, 0, 0.015);
+  box-shadow: 0 6px 16px rgba(153, 0, 0, 0.08);
+}
+
+.selector-icon {
+  font-size: 22px !important;
+  color: #666666;
+  transition: color 0.2s ease;
+}
+
+.selector-btn.active .selector-icon.gcash {
+  color: #1a73e8; /* GCash Blue */
+}
+
+.selector-btn.active .selector-icon.card {
+  color: #990000;
+}
+
+.selector-btn.active .selector-icon.paymaya {
+  color: #00b050; /* Maya Green */
+}
+
+.selector-btn.active .selector-icon.cash {
+  color: #b8860b; /* Gold/Bronze */
+}
+
+.selector-label {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  color: #444444 !important;
+}
+
+.selector-btn.active .selector-label {
+  color: #1a1a1a !important;
+}
+
+/* Payment input fields container */
+.payment-input-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-fields {
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.input-field-header {
+  font-weight: 600 !important;
+  color: #333333 !important;
+  margin-bottom: 12px !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cash instruction layout matching style-guide alert standard */
+.cash-instruction-box {
+  background-color: rgba(255, 215, 0, 0.08);
+  border: 1.5px dashed #FFD700;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.cash-header {
+  font-weight: 700 !important;
+  color: #B8860B !important;
+  font-size: 15px !important;
+  margin-bottom: 6px !important;
+}
+
+.cash-body {
+  color: #444444 !important;
+  line-height: 1.5 !important;
+  font-size: 13.5px !important;
+}
+
+.payment-error-text {
+  color: #d31027 !important;
+  font-weight: 500 !important;
+  margin-top: 4px !important;
+  margin-bottom: 16px !important;
+  display: block;
+}
+
+/* Action Pay button styles */
+.payment-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.pay-now-btn {
+  font-family: 'Poppins', sans-serif !important;
+  background-color: #990000 !important;
+  color: #ffffff !important;
+  padding: 11px 0 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  border-radius: 6px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 12px rgba(153, 0, 0, 0.2) !important;
+  width: 220px;
+}
+
+.pay-now-btn:hover {
+  background-color: #d31027 !important;
+  box-shadow: 0 6px 16px rgba(211, 16, 39, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.pay-now-btn:active {
+  transform: translateY(1px);
+}
+
+/* Success dialog formatting */
+.success-dialog-wrapper .MuiPaper-root {
+  border-radius: 12px !important;
+  padding: 20px 10px;
+}
+
+.dialog-icon-header {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0 !important;
+}
+
+.success-lottie-icon {
+  font-size: 64px !important;
+  color: #2e7d32;
+  margin: 10px auto 0 auto;
+}
+
+.dialog-success-content {
+  text-align: center;
+  padding-top: 10px !important;
+}
+
+.success-dialog-title {
+  font-weight: 700 !important;
+  color: #1a1a1a !important;
+  margin-bottom: 8px !important;
+}
+
+.success-dialog-msg {
+  color: #555555 !important;
+  margin-bottom: 24px !important;
+  line-height: 1.5 !important;
+}
+
+.success-dialog-btn {
+  background-color: #990000 !important;
+  color: #ffffff !important;
+  text-transform: none !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  padding: 10px 0 !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.success-dialog-btn:hover {
+  background-color: #d31027 !important;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+  .payment-header {
+    padding: 0 20px;
+  }
+
+  .header-user-welcome {
+    display: none;
+  }
+
+  .payment-main {
+    padding: 24px 16px;
+  }
+
+  .payment-summary-card,
+  .payment-form-card {
+    padding: 20px;
+  }
+
+  .summary-panel-col {
+    order: 2; /* Move booking overview below payment options on mobile */
+  }
+
+  .form-panel-col {
+    order: 1;
+  }
+
+  .payment-selectors {
+    gap: 0;
+  }
+
+  .pay-now-btn {
+    width: 100%;
+  }
+}

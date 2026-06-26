@@ -104,8 +104,8 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Simple validation and submission handler
-  const handleRegister = (e) => {
+  // API submission handler
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -143,19 +143,37 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
       return;
     }
 
-    // Simulate successful registration
-    console.log('Registration attempt:', { firstName, lastName, username, email, password });
-    setSuccess(true);
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          username: username.trim().toLowerCase(),
+          email: email.trim().toLowerCase(),
+          password
+        })
+      });
 
-    // Derive capitalized first name from inputs
-    const derivedFirstName = firstName.trim().charAt(0).toUpperCase() + firstName.trim().slice(1).toLowerCase();
+      const data = await res.json();
 
-    // Redirect to dashboard after a short delay to display success message
-    setTimeout(() => {
-      if (onRegisterSuccess) {
-        onRegisterSuccess({ firstName: derivedFirstName });
+      if (data.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          if (onRegisterSuccess) {
+            onRegisterSuccess(data.user, data.token);
+          }
+        }, 1200);
+      } else {
+        setError(data.message || 'Registration failed.');
       }
-    }, 1200);
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Connection to server failed. Please try again.');
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -352,14 +370,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
               <Box className="login-link-container">
                 <Typography variant="body2" className="login-link-text">
                   Already have an account?{' '}
-                  <Link
-                    href="#login"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (onNavigate) onNavigate('login');
-                    }}
-                    className="login-link"
-                  >
+                  <Link href="#login" className="login-link">
                     Login
                   </Link>
                 </Typography>

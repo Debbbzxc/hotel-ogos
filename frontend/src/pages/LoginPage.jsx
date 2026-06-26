@@ -96,8 +96,8 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Simple validation and submission handler
-  const handleLogin = (e) => {
+  // API submission handler
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -109,25 +109,35 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
       setError('Password is required.');
       return;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
 
-    // Simulate successful login
-    console.log('Login attempt:', { username, password });
-    setSuccess(true);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          password
+        })
+      });
 
-    // Derive capitalized first name from username
-    const nameParts = username.trim().split(' ');
-    const derivedFirstName = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1).toLowerCase();
+      const data = await res.json();
 
-    // Redirect to dashboard after a short delay to display success message
-    setTimeout(() => {
-      if (onLoginSuccess) {
-        onLoginSuccess({ firstName: derivedFirstName });
+      if (data.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          if (onLoginSuccess) {
+            onLoginSuccess(data.user, data.token);
+          }
+        }, 1200);
+      } else {
+        setError(data.message || 'Invalid username/email or password.');
       }
-    }, 1200);
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Connection to server failed. Please try again.');
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -242,14 +252,7 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
               <Box className="register-container">
                 <Typography variant="body2" className="register-text">
                   Don't have an account?{' '}
-                  <Link
-                    href="#register"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (onNavigate) onNavigate('register');
-                    }}
-                    className="register-link"
-                  >
+                  <Link href="#register" className="register-link">
                     Register
                   </Link>
                 </Typography>
