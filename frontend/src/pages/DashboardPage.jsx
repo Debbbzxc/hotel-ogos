@@ -30,6 +30,28 @@ import regency2Img from '../assets/regency2.jpg';
 import megaSuiteImg from '../assets/mega_suite.jpg';
 import './DashboardPage.css';
 
+const parseRoomNumber = (roomNumber) => {
+  if (!roomNumber) return { floor: '', room: '' };
+  const digits = roomNumber.replace(/\D/g, '');
+  if (!digits) {
+    return { floor: 'Unknown', room: roomNumber };
+  }
+  const num = parseInt(digits, 10);
+  if (digits.length >= 3) {
+    const floorStr = digits.slice(0, -2);
+    const roomStr = digits.slice(-2);
+    return {
+      floor: parseInt(floorStr, 10),
+      room: roomStr
+    };
+  } else {
+    return {
+      floor: 1,
+      room: String(num).padStart(2, '0')
+    };
+  }
+};
+
 const roomImages = {
   premium: premiumImg,
   deluxe: deluxeImg,
@@ -272,8 +294,16 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
         if (data.success) {
           const mapped = data.rooms.map(room => ({
             ...room,
-            image: roomImages[room.id] || roomPlaceholder
+            image: room.imageUrl || roomImages[room.id] || roomPlaceholder
           }));
+          
+          // Sort rooms from cheapest to most expensive based on 12h rate
+          mapped.sort((a, b) => {
+            const rateA = a.rates?.[12] || 0;
+            const rateB = b.rates?.[12] || 0;
+            return rateA - rateB;
+          });
+
           setRoomOptions(mapped);
 
           // Clear selection if the currently selected room has 0 available
@@ -452,7 +482,9 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
       selectedRoom,
       hours: duration,
       notes: sanitizedNotes,
-      totalAmount: calculatedPrice
+      totalAmount: calculatedPrice,
+      roomName: room.name,
+      roomImage: room.imageUrl || roomImages[room.id] || roomPlaceholder
     };
 
     setSuccess(true);
@@ -799,8 +831,25 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                       >
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
                           <Box sx={{ flex: 1, minWidth: '280px' }}>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: '#990000', mb: 0.5 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, color: '#990000', mb: 0.5, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                               {booking.room?.name || booking.roomType.toUpperCase()}
+                              {booking.roomNumber && (
+                                <Typography 
+                                  component="span" 
+                                  sx={{ 
+                                    fontWeight: 600, 
+                                    color: '#FFD700', 
+                                    px: 1, 
+                                    py: 0.2, 
+                                    bgcolor: '#990000', 
+                                    borderRadius: '4px', 
+                                    fontSize: '11.5px',
+                                    fontFamily: "'Poppins', sans-serif"
+                                  }}
+                                >
+                                  Room {booking.roomNumber} (Floor {parseRoomNumber(booking.roomNumber).floor}, Room {parseRoomNumber(booking.roomNumber).room})
+                                </Typography>
+                              )}
                             </Typography>
                             <Typography variant="caption" sx={{ color: '#777', display: 'block', mb: 2 }}>
                               Booking ID: {booking._id} | Placed on {new Date(booking.createdAt).toLocaleDateString()}

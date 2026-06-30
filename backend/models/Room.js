@@ -26,6 +26,10 @@ const roomSchema = new mongoose.Schema({
     required: [true, 'Total rooms capacity is required'],
     default: 1
   },
+  roomNumbers: {
+    type: [String],
+    default: []
+  },
   description: {
     type: String,
     default: ''

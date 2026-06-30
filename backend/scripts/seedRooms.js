@@ -26,6 +26,7 @@ const seedData = async () => {
         baseRate12: 825,
         baseRate24: 1365,
         totalRooms: 5,
+        roomNumbers: ['101', '102', '103', '104', '105'],
         description: 'Cozy and standard premium accommodation perfect for short stays.',
         imageUrl: ''
       },
@@ -35,6 +36,7 @@ const seedData = async () => {
         baseRate12: 865,
         baseRate24: 1405,
         totalRooms: 3,
+        roomNumbers: ['201', '202', '203'],
         description: 'Spacious deluxe room with premium bedsheets and essential toiletries.',
         imageUrl: ''
       },
@@ -44,6 +46,7 @@ const seedData = async () => {
         baseRate12: 935,
         baseRate24: 1475,
         totalRooms: 2,
+        roomNumbers: ['301', '302'],
         description: 'Elegant regency suite featuring ambient lighting and complimentary hot coffee.',
         imageUrl: ''
       },
@@ -53,6 +56,7 @@ const seedData = async () => {
         baseRate12: 1135,
         baseRate24: 1675,
         totalRooms: 4,
+        roomNumbers: ['401', '402', '403', '404'],
         description: 'Upgraded regency experience with smart TV and standard room configurations.',
         imageUrl: ''
       },
@@ -62,6 +66,7 @@ const seedData = async () => {
         baseRate12: 1960,
         baseRate24: 2500,
         totalRooms: 1,
+        roomNumbers: ['501'],
         description: 'The ultimate luxury package at Hotel Ogos. King-sized bed and complete mini-bar.',
         imageUrl: ''
       }
@@ -79,13 +84,13 @@ const seedData = async () => {
         lastName: 'Admin',
         username: 'admin',
         email: 'admin@hotelogos.com',
-        password: 'adminpassword123',
+        password: 'password123',
         role: 'admin'
       });
       await adminUser.save();
       console.log('Default Admin user created successfully!');
       console.log('Username: admin');
-      console.log('Password: adminpassword123');
+      console.log('Password: password123');
     } else {
       console.log('Admin user already exists.');
     }

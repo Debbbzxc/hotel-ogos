@@ -50,7 +50,7 @@ const createReservation = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Selected room type does not exist in the database.' });
     }
 
-    // 4. Overbooking prevention check
+    // 4. Overbooking prevention check and occupied room tracking
     const [ciYear, ciMonth, ciDay] = checkInDate.split('-').map(Number);
     const [ciHour, ciMin] = checkInTime.split(':').map(Number);
     const queryStart = new Date(ciYear, ciMonth - 1, ciDay, ciHour, ciMin, 0);
@@ -62,6 +62,7 @@ const createReservation = async (req, res) => {
     });
 
     let occupiedCount = 0;
+    const occupiedRoomNumbers = new Set();
     for (const res of activeReservations) {
       const resCiDate = new Date(res.checkInDate);
       const [resCiHour, resCiMin] = res.checkInTime.split(':').map(Number);
@@ -80,6 +81,9 @@ const createReservation = async (req, res) => {
       const overlap = queryStart < resHousekeepingEnd && resStart < queryEnd;
       if (overlap) {
         occupiedCount++;
+        if (res.roomNumber) {
+          occupiedRoomNumbers.add(res.roomNumber);
+        }
       }
     }
 
@@ -91,9 +95,32 @@ const createReservation = async (req, res) => {
       });
     }
 
-    // 5. Mask card number (only save last 4 digits for security compliance)
-    const rawCard = paymentDetails.cardNumber.replace(/\s/g, '');
-    const last4 = rawCard.slice(-4);
+    // Assign a room number
+    let assignedRoomNumber = '';
+    if (room.roomNumbers && room.roomNumbers.length > 0) {
+      for (const num of room.roomNumbers) {
+        if (!occupiedRoomNumbers.has(num)) {
+          assignedRoomNumber = num;
+          break;
+        }
+      }
+    }
+
+    // Fallback if roomNumbers array is empty or somehow all match
+    if (!assignedRoomNumber) {
+      if (room.roomNumbers && room.roomNumbers.length > 0) {
+        assignedRoomNumber = room.roomNumbers[0];
+      } else {
+        assignedRoomNumber = 'TBD';
+      }
+    }
+
+    // 5. Calculate checkout time string (24h format, e.g. "14:30")
+    const [hour, minute] = checkInTime.split(':').map(Number);
+    const totalMinutes = hour * 60 + minute + Number(hours) * 60;
+    const endHour = Math.floor(totalMinutes / 60) % 24;
+    const endMinute = totalMinutes % 60;
+    const computedCheckOutTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
 
     // 6. Create reservation document
     const reservation = new Reservation({
@@ -103,12 +130,12 @@ const createReservation = async (req, res) => {
       checkInDate: new Date(`${checkInDate}T00:00:00.000Z`),
       checkOutDate: new Date(`${checkOutDate}T00:00:00.000Z`),
       checkInTime,
+      checkOutTime: computedCheckOutTime,
       hours: Number(hours),
       notes: validatedData.notes,
       totalAmount: validatedData.totalAmount,
+      roomNumber: assignedRoomNumber,
       paymentDetails: {
-        cardName: paymentDetails.cardName,
-        cardNumberLast4: last4,
         status: 'paid',
         paidAt: new Date()
       }

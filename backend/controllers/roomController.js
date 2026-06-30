@@ -47,7 +47,8 @@ const getAllRooms = async (req, res) => {
         rates: { 12: room.baseRate12, 24: room.baseRate24 },
         available: room.totalRooms,
         description: room.description,
-        imageUrl: room.imageUrl
+        imageUrl: room.imageUrl,
+        roomNumbers: room.roomNumbers
       }));
       return res.json({ success: true, rooms: result });
     }
@@ -107,7 +108,8 @@ const getAllRooms = async (req, res) => {
           rates: { 12: room.baseRate12, 24: room.baseRate24 },
           available: availableCount,
           description: room.description,
-          imageUrl: room.imageUrl
+          imageUrl: room.imageUrl,
+          roomNumbers: room.roomNumbers
         };
       });
 
@@ -150,7 +152,8 @@ const getAllRooms = async (req, res) => {
         rates: { 12: room.baseRate12, 24: room.baseRate24 },
         available: availableCount,
         description: room.description,
-        imageUrl: room.imageUrl
+        imageUrl: room.imageUrl,
+        roomNumbers: room.roomNumbers
       };
     });
 
@@ -168,7 +171,7 @@ const getAllRooms = async (req, res) => {
  */
 const createRoom = async (req, res) => {
   try {
-    const { roomId, name, baseRate12, baseRate24, totalRooms, description, imageUrl } = req.body;
+    const { roomId, name, baseRate12, baseRate24, totalRooms, description, imageUrl, roomNumbers } = req.body;
 
     if (!roomId || !name || !baseRate12 || !baseRate24 || !totalRooms) {
       return res.status(400).json({ success: false, message: 'Please provide all required room fields.' });
@@ -179,12 +182,53 @@ const createRoom = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Room type with this ID already exists.' });
     }
 
+    let parsedRoomNumbers = [];
+    if (Array.isArray(roomNumbers)) {
+      parsedRoomNumbers = roomNumbers.map(n => n.trim()).filter(Boolean);
+    } else if (typeof roomNumbers === 'string') {
+      parsedRoomNumbers = roomNumbers.split(',').map(n => n.trim()).filter(Boolean);
+    }
+
+    const capacity = parsedRoomNumbers.length > 0 ? parsedRoomNumbers.length : Number(totalRooms);
+    
+    // Auto-generate room numbers if none provided
+    if (parsedRoomNumbers.length === 0 && capacity > 0) {
+      for (let i = 1; i <= capacity; i++) {
+        parsedRoomNumbers.push(`1${String(i).padStart(2, '0')}`);
+      }
+    }
+
+    // 1. Self duplicates check
+    const uniqueNumbers = [...new Set(parsedRoomNumbers)];
+    if (uniqueNumbers.length !== parsedRoomNumbers.length) {
+      return res.status(400).json({ success: false, message: 'Duplicate room numbers are not allowed within the same room.' });
+    }
+
+    // 2. Database duplicates check
+    const duplicateRooms = await Room.find({
+      roomNumbers: { $in: parsedRoomNumbers }
+    });
+    if (duplicateRooms.length > 0) {
+      const duplicates = [];
+      for (const dupRoom of duplicateRooms) {
+        const overlappingNumbers = dupRoom.roomNumbers.filter(n => parsedRoomNumbers.includes(n));
+        duplicates.push({
+          name: dupRoom.name,
+          roomId: dupRoom.roomId,
+          numbers: overlappingNumbers
+        });
+      }
+      const msg = duplicates.map(d => `Room number(s) ${d.numbers.join(', ')} already in use by ${d.name} (${d.roomId})`).join('; ');
+      return res.status(400).json({ success: false, message: msg });
+    }
+
     const room = await Room.create({
       roomId: roomId.toLowerCase(),
       name,
       baseRate12,
       baseRate24,
-      totalRooms,
+      totalRooms: capacity,
+      roomNumbers: parsedRoomNumbers,
       description,
       imageUrl
     });
@@ -203,18 +247,73 @@ const createRoom = async (req, res) => {
  */
 const updateRoom = async (req, res) => {
   try {
-    const { name, baseRate12, baseRate24, totalRooms, description, imageUrl } = req.body;
+    const { name, baseRate12, baseRate24, totalRooms, description, imageUrl, roomNumbers } = req.body;
     const room = await Room.findOne({ roomId: req.params.roomId.toLowerCase() });
     if (!room) {
       return res.status(404).json({ success: false, message: 'Room type not found' });
     }
 
+    let targetRoomNumbers = [...room.roomNumbers];
+    let targetTotalRooms = room.totalRooms;
+
+    if (roomNumbers !== undefined) {
+      let parsedRoomNumbers = [];
+      if (Array.isArray(roomNumbers)) {
+        parsedRoomNumbers = roomNumbers.map(n => n.trim()).filter(Boolean);
+      } else if (typeof roomNumbers === 'string') {
+        parsedRoomNumbers = roomNumbers.split(',').map(n => n.trim()).filter(Boolean);
+      }
+      targetRoomNumbers = parsedRoomNumbers;
+      targetTotalRooms = parsedRoomNumbers.length;
+    } else if (totalRooms !== undefined) {
+      targetTotalRooms = Number(totalRooms);
+      // Adjust roomNumbers array length if it doesn't match totalRooms
+      if (targetRoomNumbers.length !== targetTotalRooms) {
+        const diff = targetTotalRooms - targetRoomNumbers.length;
+        if (diff > 0) {
+          const startNum = targetRoomNumbers.length > 0 ? (Math.max(...targetRoomNumbers.map(n => parseInt(n.replace(/\D/g, '')) || 0)) + 1) : 101;
+          for (let i = 0; i < diff; i++) {
+            targetRoomNumbers.push(String(startNum + i));
+          }
+        } else {
+          targetRoomNumbers = targetRoomNumbers.slice(0, targetTotalRooms);
+        }
+      }
+    }
+
+    // 1. Self duplicates check
+    const uniqueNumbers = [...new Set(targetRoomNumbers)];
+    if (uniqueNumbers.length !== targetRoomNumbers.length) {
+      return res.status(400).json({ success: false, message: 'Duplicate room numbers are not allowed within the same room.' });
+    }
+
+    // 2. Database duplicates check (excluding current room)
+    const duplicateRooms = await Room.find({
+      roomId: { $ne: req.params.roomId.toLowerCase() },
+      roomNumbers: { $in: targetRoomNumbers }
+    });
+    if (duplicateRooms.length > 0) {
+      const duplicates = [];
+      for (const dupRoom of duplicateRooms) {
+        const overlappingNumbers = dupRoom.roomNumbers.filter(n => targetRoomNumbers.includes(n));
+        duplicates.push({
+          name: dupRoom.name,
+          roomId: dupRoom.roomId,
+          numbers: overlappingNumbers
+        });
+      }
+      const msg = duplicates.map(d => `Room number(s) ${d.numbers.join(', ')} already in use by ${d.name} (${d.roomId})`).join('; ');
+      return res.status(400).json({ success: false, message: msg });
+    }
+
+    // Apply updates if valid
     if (name) room.name = name;
     if (baseRate12 !== undefined) room.baseRate12 = baseRate12;
     if (baseRate24 !== undefined) room.baseRate24 = baseRate24;
-    if (totalRooms !== undefined) room.totalRooms = totalRooms;
     if (description !== undefined) room.description = description;
     if (imageUrl !== undefined) room.imageUrl = imageUrl;
+    room.roomNumbers = targetRoomNumbers;
+    room.totalRooms = targetTotalRooms;
 
     await room.save();
     return res.json({ success: true, message: 'Room type updated successfully', room });

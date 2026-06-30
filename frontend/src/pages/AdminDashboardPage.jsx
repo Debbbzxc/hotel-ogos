@@ -64,6 +64,28 @@ const staticRoomImages = {
   mega_suite: megaSuiteImg
 };
 
+const parseRoomNumber = (roomNumber) => {
+  if (!roomNumber) return { floor: '', room: '' };
+  const digits = roomNumber.replace(/\D/g, '');
+  if (!digits) {
+    return { floor: 'Unknown', room: roomNumber };
+  }
+  const num = parseInt(digits, 10);
+  if (digits.length >= 3) {
+    const floorStr = digits.slice(0, -2);
+    const roomStr = digits.slice(-2);
+    return {
+      floor: parseInt(floorStr, 10),
+      room: roomStr
+    };
+  } else {
+    return {
+      floor: 1,
+      room: String(num).padStart(2, '0')
+    };
+  }
+};
+
 // MUI theme matching style guide
 const ogosTheme = createTheme({
   palette: {
@@ -258,7 +280,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
     baseRate24: '',
     totalRooms: '',
     description: '',
-    imageUrl: ''
+    imageUrl: '',
+    roomNumbers: ''
   });
 
   // Users Modal
@@ -312,8 +335,13 @@ export default function AdminDashboardPage({ user, onLogout }) {
         setReservations(dataReservations.reservations);
       }
       if (dataRooms.success) {
-        // Normalise rooms schema from database
-        setRooms(dataRooms.rooms);
+        // Sort rooms from cheapest to most expensive based on 12h rate
+        const sortedRooms = [...dataRooms.rooms].sort((a, b) => {
+          const rateA = a.rates?.[12] || 0;
+          const rateB = b.rates?.[12] || 0;
+          return rateA - rateB;
+        });
+        setRooms(sortedRooms);
       }
       if (dataUsers.success) {
         setUsers(dataUsers.users);
@@ -363,7 +391,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
       baseRate24: '',
       totalRooms: '5',
       description: '',
-      imageUrl: ''
+      imageUrl: '',
+      roomNumbers: ''
     });
     setOpenRoomModal(true);
   };
@@ -377,7 +406,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
       baseRate24: room.rates[24].toString(),
       totalRooms: room.available.toString(), // normalise value
       description: room.description || '',
-      imageUrl: room.imageUrl || ''
+      imageUrl: room.imageUrl || '',
+      roomNumbers: room.roomNumbers ? room.roomNumbers.join(', ') : ''
     });
     setOpenRoomModal(true);
   };
@@ -404,7 +434,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
   const handleSaveRoom = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const { roomId, name, baseRate12, baseRate24, totalRooms, description, imageUrl } = roomFormData;
+    const { roomId, name, baseRate12, baseRate24, totalRooms, description, imageUrl, roomNumbers } = roomFormData;
 
     if (!roomId || !name || !baseRate12 || !baseRate24 || !totalRooms) {
       triggerAlert('Please fill in all required fields.', 'error');
@@ -418,7 +448,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
       baseRate24: Number(baseRate24),
       totalRooms: Number(totalRooms),
       description,
-      imageUrl
+      imageUrl,
+      roomNumbers: roomNumbers ? roomNumbers.split(',').map(n => n.trim()).filter(Boolean) : []
     };
 
     try {
@@ -622,12 +653,20 @@ export default function AdminDashboardPage({ user, onLogout }) {
     // Total rooms capacity in hotel
     const totalCapacity = rooms.reduce((sum, r) => sum + r.available, 0); // using available as capacity
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const localToday = new Date();
+    const year = localToday.getFullYear();
+    const month = String(localToday.getMonth() + 1).padStart(2, '0');
+    const day = String(localToday.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
     const occupiedToday = reservations
       .filter(r => r.paymentDetails?.status === 'paid' || r.paymentDetails?.status === 'pending')
       .filter(r => {
         const inStr = new Date(r.checkInDate).toISOString().split('T')[0];
         const outStr = new Date(r.checkOutDate).toISOString().split('T')[0];
+        if (inStr === outStr) {
+          return todayStr === inStr;
+        }
         return todayStr >= inStr && todayStr < outStr;
       }).length;
 
@@ -897,15 +936,6 @@ export default function AdminDashboardPage({ user, onLogout }) {
                       </div>
                     </div>
 
-                    <div className="stat-card">
-                      <div className="stat-card-left">
-                        <span className="stat-card-label">Occupancy Rate</span>
-                        <h3 className="stat-card-value">{metrics.occupancy}%</h3>
-                      </div>
-                      <div className="stat-card-icon-wrapper">
-                        <DashboardIcon />
-                      </div>
-                    </div>
 
                     <div className="stat-card gold-card">
                       <div className="stat-card-left">
@@ -1026,7 +1056,14 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 {res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Guest'}
                               </TableCell>
                               <TableCell sx={{ textTransform: 'capitalize' }}>
-                                {res.room?.name || res.roomType.replace('_', ' ')}
+                                <Typography sx={{ fontSize: '13.5px', fontWeight: 500 }}>
+                                  {res.room?.name || res.roomType.replace('_', ' ')}
+                                </Typography>
+                                {res.roomNumber && (
+                                  <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#990000', mt: 0.5 }}>
+                                    Room {res.roomNumber}
+                                  </Typography>
+                                )}
                               </TableCell>
                               <TableCell>
                                 <Typography sx={{ fontSize: '13px', fontWeight: 500 }}>
@@ -1141,7 +1178,15 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 <Typography sx={{ fontWeight: 500, textTransform: 'capitalize', fontSize: '13.5px' }}>
                                   {res.room?.name || res.roomType.replace('_', ' ')}
                                 </Typography>
-                                <Typography sx={{ fontSize: '11px', color: '#888' }}>
+                                {res.roomNumber && (
+                                  <Typography sx={{ fontSize: '12.5px', fontWeight: 600, color: '#990000', mt: 0.5 }}>
+                                    Room {res.roomNumber}
+                                    <span style={{ fontSize: '11px', color: '#666', fontWeight: 400, marginLeft: '6px' }}>
+                                      (Floor {parseRoomNumber(res.roomNumber).floor}, Room {parseRoomNumber(res.roomNumber).room})
+                                    </span>
+                                  </Typography>
+                                )}
+                                <Typography sx={{ fontSize: '11px', color: '#888', mt: 0.5 }}>
                                   ID: {res.roomType}
                                 </Typography>
                               </TableCell>
@@ -1161,7 +1206,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   ₱{res.totalAmount.toLocaleString()}
                                 </Typography>
                                 <Typography sx={{ fontSize: '11px', color: '#888' }}>
-                                  Card Last4: {res.paymentDetails?.cardNumberLast4 || 'N/A'}
+                                  Method: Card
                                 </Typography>
                               </TableCell>
                               <TableCell>
@@ -1256,9 +1301,6 @@ export default function AdminDashboardPage({ user, onLogout }) {
                           <div key={room.id} className="admin-room-card">
                             <div className="admin-room-image-wrapper">
                               <img src={imageSrc} alt={room.name} className="admin-room-img" />
-                              <span className="admin-room-badge">
-                                ID: {room.id}
-                              </span>
                             </div>
                             <div className="admin-room-content">
                               <h5 className="admin-room-name">{room.name}</h5>
@@ -1287,6 +1329,14 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   <span style={{ color: '#666', fontFamily: "'Poppins', sans-serif" }}>Total Inventory:</span>
                                   <span style={{ fontWeight: 600, fontFamily: "'Poppins', sans-serif" }}>{room.available} Units</span>
                                 </div>
+                                {room.roomNumbers && room.roomNumbers.length > 0 && (
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', alignItems: 'center' }}>
+                                    <span style={{ color: '#666', fontFamily: "'Poppins', sans-serif" }}>Room Numbers:</span>
+                                    <span style={{ fontWeight: 600, fontFamily: "'Poppins', sans-serif", color: '#990000', wordBreak: 'break-all', textAlign: 'right', maxWidth: '65%' }}>
+                                      {room.roomNumbers.join(', ')}
+                                    </span>
+                                  </div>
+                                )}
                                 {(() => {
                                   const stats = getLiveRoomStatuses(room, reservations);
                                   return (
@@ -1459,15 +1509,17 @@ export default function AdminDashboardPage({ user, onLogout }) {
             </DialogTitle>
             
             <DialogContent sx={{ mt: 2, pt: 1 }}>
-              <FormField
-                label="Room ID (Unique String)"
-                value={roomFormData.roomId}
-                onChange={(e) => setRoomFormData(prev => ({ ...prev, roomId: e.target.value }))}
-                disabled={isEditingRoom}
-                required
-                helperText="e.g. deluxe, premium, regency_suite (lowercase, no spaces)"
-                placeholder="deluxe"
-              />
+              {!isEditingRoom && (
+                <FormField
+                  label="Room ID (Unique String)"
+                  value={roomFormData.roomId}
+                  onChange={(e) => setRoomFormData(prev => ({ ...prev, roomId: e.target.value }))}
+                  disabled={isEditingRoom}
+                  required
+                  helperText="e.g. deluxe, premium, regency_suite (lowercase, no spaces)"
+                  placeholder="deluxe"
+                />
+              )}
               <FormField
                 label="Room Display Name"
                 value={roomFormData.name}
@@ -1498,6 +1550,22 @@ export default function AdminDashboardPage({ user, onLogout }) {
                   }}
                 />
               </Box>
+
+              <FormField
+                label="Room Numbers (Comma Separated)"
+                value={roomFormData.roomNumbers || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const count = val.split(',').map(n => n.trim()).filter(Boolean).length;
+                  setRoomFormData(prev => ({ 
+                    ...prev, 
+                    roomNumbers: val,
+                    totalRooms: count > 0 ? String(count) : prev.totalRooms
+                  }));
+                }}
+                helperText="e.g. 101, 102, 103. The count of room numbers will automatically update the Total Rooms Capacity."
+                placeholder="101, 102, 103"
+              />
 
               <FormField
                 label="Total Rooms Capacity"

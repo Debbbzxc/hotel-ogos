@@ -27,10 +27,13 @@ const reservationSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Check-in time is required']
   },
+  checkOutTime: {
+    type: String,
+    required: [true, 'Check-out time is required']
+  },
   hours: {
     type: Number,
-    required: [true, 'Stay hours duration is required'],
-    enum: [12, 24]
+    required: [true, 'Stay hours duration is required']
   },
   notes: {
     type: String,
@@ -41,15 +44,11 @@ const reservationSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Total amount is required']
   },
+  roomNumber: {
+    type: String,
+    trim: true
+  },
   paymentDetails: {
-    cardName: {
-      type: String,
-      required: [true, 'Cardholder name is required']
-    },
-    cardNumberLast4: {
-      type: String,
-      required: [true, 'Last 4 digits of card number are required']
-    },
     status: {
       type: String,
       enum: ['paid', 'pending', 'cancelled'],
@@ -65,6 +64,11 @@ const reservationSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// Indexes for query speed optimization (Normalization & Optimization)
+reservationSchema.index({ user: 1 });
+reservationSchema.index({ roomType: 1, 'paymentDetails.status': 1 });
+reservationSchema.index({ checkInDate: 1, checkOutDate: 1 });
 
 const Reservation = mongoose.model('Reservation', reservationSchema);
 module.exports = Reservation;

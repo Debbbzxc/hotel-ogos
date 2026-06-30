@@ -148,9 +148,9 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
   if (!reservation) return null;
 
   // Retrieve room configuration
-  const room = ROOM_OPTIONS.find((r) => r.id === reservation.selectedRoom) || {
-    name: reservation.selectedRoom,
-    image: roomPlaceholder
+  const room = {
+    name: reservation.roomName || (ROOM_OPTIONS.find((r) => r.id === reservation.selectedRoom)?.name) || reservation.selectedRoom,
+    image: reservation.roomImage || (ROOM_OPTIONS.find((r) => r.id === reservation.selectedRoom)?.image) || roomPlaceholder
   };
 
   // Price invoice breakdown
