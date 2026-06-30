@@ -91,22 +91,17 @@ function validateReservation(payload) {
 
   // 5. Whitelist Stay Duration
   const duration = Number(hours);
-  if (!HOURS_WHITELIST.includes(duration)) {
+  const isValidDuration = duration === 12 || (duration % 24 === 0 && duration > 0);
+  if (!isValidDuration) {
     throw new Error('Invalid stay duration selected.');
   }
 
-  // 6. Calculate Stay Duration in Days
-  const diffTime = checkOut.getTime() - checkIn.getTime();
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-  // 7. Recalculate Total Price (Server-Side Source of Truth)
+  // 6. Recalculate Total Price (Server-Side Source of Truth)
   let calculatedPrice = 0;
-  if (diffDays > 1) {
-    // Timeline > 24 Hours: 24-Hr Rate * Number of Days Stayed
+  if (duration > 24) {
     const dayRate = roomRates[24];
-    calculatedPrice = dayRate * diffDays;
+    calculatedPrice = dayRate * (duration / 24);
   } else {
-    // Timeline <= 24 Hours: Base Rate for selected hours package
     calculatedPrice = roomRates[duration] || 0;
   }
 

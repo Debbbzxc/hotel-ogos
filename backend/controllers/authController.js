@@ -133,8 +133,154 @@ const getMe = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Get all users list (Admin only)
+ * @route   GET /api/auth/users
+ * @access  Private/Admin
+ */
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+    return res.json({ success: true, users });
+  } catch (error) {
+    console.error('Get all users error:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Update user role (Admin only)
+ * @route   PUT /api/auth/users/:id/role
+ * @access  Private/Admin
+ */
+const updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!role || !['guest', 'admin'].includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role provided' });
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (req.user._id.toString() === user._id.toString() && role !== 'admin') {
+      return res.status(400).json({ success: false, message: 'You cannot demote yourself from admin.' });
+    }
+    user.role = role;
+    await user.save();
+    return res.json({
+      success: true,
+      message: `User role updated to ${role} successfully.`,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Update user role error:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Update user profile (Admin only)
+ * @route   PUT /api/auth/users/:id
+ * @access  Private/Admin
+ */
+const updateUserProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, username, email } = req.body;
+    if (!firstName || !lastName || !username || !email) {
+      return res.status(400).json({ success: false, message: 'All fields are required.' });
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (email.toLowerCase() !== user.email.toLowerCase()) {
+      const emailExists = await User.findOne({ email: email.toLowerCase() });
+      if (emailExists) {
+        return res.status(400).json({ success: false, message: 'Email already in use.' });
+      }
+    }
+    if (username.toLowerCase() !== user.username.toLowerCase()) {
+      const usernameExists = await User.findOne({ username: username.toLowerCase() });
+      if (usernameExists) {
+        return res.status(400).json({ success: false, message: 'Username already in use.' });
+      }
+    }
+
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.username = username.toLowerCase();
+    user.email = email.toLowerCase();
+
+    await user.save();
+    return res.json({
+      success: true,
+      message: 'User profile updated successfully.',
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Update user profile error:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Delete user account (Admin only)
+ * @route   DELETE /api/auth/users/:id
+ * @access  Private/Admin
+ */
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (req.user._id.toString() === user._id.toString()) {
+      return res.status(400).json({ success: false, message: 'You cannot delete your own admin account.' });
+    }
+
+    const Reservation = require('../models/Reservation');
+    const activeReservation = await Reservation.findOne({
+      user: user._id,
+      'paymentDetails.status': { $in: ['paid', 'pending'] }
+    });
+    if (activeReservation) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete user. They have active reservations. Please cancel their reservations first.'
+      });
+    }
+
+    await User.findByIdAndDelete(user._id);
+    return res.json({ success: true, message: 'User account deleted successfully.' });
+  } catch (error) {
+    console.error('Delete user error:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
-  getMe
+  getMe,
+  getAllUsers,
+  updateUserRole,
+  updateUserProfile,
+  deleteUser
 };

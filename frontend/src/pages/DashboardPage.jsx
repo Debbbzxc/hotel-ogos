@@ -13,7 +13,8 @@ import {
   Paper,
   Divider,
   InputAdornment,
-  CircularProgress
+  CircularProgress,
+  Checkbox
 } from '@mui/material';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -70,8 +71,25 @@ const ogosTheme = createTheme({
 
 // Available stay hour options
 const HOURS_OPTIONS = [
+  { value: 12, label: '12 Hours Short Stay' },
+  { value: 24, label: '1 Day (24 Hours)' },
+  { value: 48, label: '2 Days (48 Hours)' },
+  { value: 72, label: '3 Days (72 Hours)' },
+  { value: 96, label: '4 Days (96 Hours)' },
+  { value: 120, label: '5 Days (120 Hours)' },
+  { value: 144, label: '6 Days (144 Hours)' },
+  { value: 168, label: '7 Days (168 Hours)' }
+];
+
+const STAY_OPTIONS = [
   { value: 12, label: '12 Hours' },
-  { value: 24, label: '24 Hours' }
+  { value: 24, label: '1 Day' },
+  { value: 48, label: '2 Days' },
+  { value: 72, label: '3 Days' },
+  { value: 96, label: '4 Days' },
+  { value: 120, label: '5 Days' },
+  { value: 144, label: '6 Days' },
+  { value: 168, label: '7 Days' }
 ];
 
 const FormField = styled(TextField)({
@@ -120,6 +138,35 @@ const TabButton = styled(Button)(({ active }) => ({
 export default function DashboardPage({ user, onLogout, onReservationComplete }) {
   const firstName = user?.firstName || 'Guest';
 
+  // Helper to format 24h time string (e.g. "14:30") to 12h AM/PM
+  const formatTimeToAMPM = (time24) => {
+    if (!time24) return '';
+    try {
+      const [hour, minute] = time24.split(':').map(Number);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      let displayHour = hour % 12;
+      displayHour = displayHour ? displayHour : 12;
+      const displayMin = String(minute).padStart(2, '0');
+      return `${displayHour}:${displayMin} ${ampm}`;
+    } catch (err) {
+      return time24;
+    }
+  };
+
+  // Helper to calculate check-out time based on check-in time and stay hours
+  const getCheckoutTime = (checkInTimeStr, durationHours) => {
+    if (!checkInTimeStr || !durationHours) return '';
+    const [hour, minute] = checkInTimeStr.split(':').map(Number);
+    const totalMinutes = hour * 60 + minute + durationHours * 60;
+    const endHour = Math.floor(totalMinutes / 60) % 24;
+    const endMinute = totalMinutes % 60;
+    const ampm = endHour >= 12 ? 'PM' : 'AM';
+    let displayHour = endHour % 12;
+    displayHour = displayHour ? displayHour : 12;
+    const displayMin = String(endMinute).padStart(2, '0');
+    return `${displayHour}:${displayMin} ${ampm}`;
+  };
+
   // Navigation state
   const [activeTab, setActiveTab] = useState('book'); // 'book' or 'history'
 
@@ -142,6 +189,47 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Helper to calculate exact checkout date, time, and display string
+  const getCalculatedCheckout = () => {
+    if (!checkInDate || !checkInTime || !hours) {
+      return { dateStr: '', timeStr: '', display: 'Fill in Check-in details...' };
+    }
+    try {
+      const [hour, minute] = checkInTime.split(':').map(Number);
+      const [year, month, day] = checkInDate.split('-').map(Number);
+      const checkInDateTime = new Date(year, month - 1, day, hour, minute, 0);
+      const checkOutDateTime = new Date(checkInDateTime.getTime() + Number(hours) * 60 * 60 * 1000);
+
+      const coYear = checkOutDateTime.getFullYear();
+      const coMonth = String(checkOutDateTime.getMonth() + 1).padStart(2, '0');
+      const coDay = String(checkOutDateTime.getDate()).padStart(2, '0');
+      const dateStr = `${coYear}-${coMonth}-${coDay}`;
+
+      const hr = String(checkOutDateTime.getHours()).padStart(2, '0');
+      const min = String(checkOutDateTime.getMinutes()).padStart(2, '0');
+      const timeStr = `${hr}:${min}`;
+
+      const formattedDate = checkOutDateTime.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      
+      const ampm = checkOutDateTime.getHours() >= 12 ? 'PM' : 'AM';
+      let displayHour = checkOutDateTime.getHours() % 12;
+      displayHour = displayHour ? displayHour : 12;
+      const displayHourPadded = String(displayHour).padStart(2, '0');
+      const displayMin = String(checkOutDateTime.getMinutes()).padStart(2, '0');
+      const display = `${formattedDate} at ${displayHourPadded}:${displayMin} ${ampm}`;
+
+      return { dateStr, timeStr, display };
+    } catch (err) {
+      return { dateStr: '', timeStr: '', display: 'Error calculating checkout...' };
+    }
+  };
+
+  const checkoutDetails = getCalculatedCheckout();
 
   // Helper to format today's date in local YYYY-MM-DD
   const getTodayStr = () => {
@@ -168,13 +256,15 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     return true;
   };
 
-  // Fetch rooms list based on date ranges
+  // Fetch rooms list based on date ranges and times
   useEffect(() => {
     const fetchRooms = async () => {
       setLoadingRooms(true);
       try {
         let url = '/api/rooms';
-        if (isValidDateRange(checkInDate, checkOutDate)) {
+        if (checkInDate && checkOutDate && checkInTime && checkoutDetails.timeStr) {
+          url += `?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&checkInTime=${checkInTime}&checkOutTime=${checkoutDetails.timeStr}`;
+        } else if (checkInDate && checkOutDate) {
           url += `?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}`;
         }
         const res = await fetch(url);
@@ -201,29 +291,16 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     };
 
     fetchRooms();
-  }, [checkInDate, checkOutDate]);
+  }, [checkInDate, checkOutDate, checkInTime, checkoutDetails.timeStr]);
 
-  // Auto-adjust Check-out Date if Check-in Date is set later than Check-out Date
+  // Sync checkOutDate state for backend rooms availability API
   useEffect(() => {
-    if (checkInDate && checkOutDate) {
-      const ci = new Date(checkInDate);
-      const co = new Date(checkOutDate);
-      if (ci > co) {
-        setCheckOutDate(checkInDate);
-      }
+    if (checkoutDetails.dateStr) {
+      setCheckOutDate(checkoutDetails.dateStr);
+    } else {
+      setCheckOutDate(checkInDate);
     }
-  }, [checkInDate]);
-
-  // Auto-adjust Check-in Date if Check-out Date is set earlier than Check-in Date
-  useEffect(() => {
-    if (checkInDate && checkOutDate) {
-      const ci = new Date(checkInDate);
-      const co = new Date(checkOutDate);
-      if (co < ci) {
-        setCheckInDate(checkOutDate);
-      }
-    }
-  }, [checkOutDate]);
+  }, [checkInDate, checkInTime, hours]);
 
   // Fetch Guest's past bookings
   const fetchMyBookings = async () => {
@@ -249,42 +326,22 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     fetchMyBookings();
   }, []);
 
-  // Helper to calculate stay duration in days
-  const getDiffDays = () => {
-    if (!checkInDate || !checkOutDate) return 0;
-    const d1 = new Date(checkInDate);
-    const d2 = new Date(checkOutDate);
-    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return 0;
-    const diffTime = d2.getTime() - d1.getTime();
-    return Math.round(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  const diffDays = getDiffDays();
-  const isHoursLocked = diffDays > 1;
-
-  // Auto-lock Hours of Stay to 24 when stay range is multi-day (> 1 day)
-  useEffect(() => {
-    if (isHoursLocked) {
-      setHours(24);
-    }
-  }, [isHoursLocked]);
-
-  // Dynamic price calculation based on room, duration, and stay days
+  // Dynamic price calculation based on room and stay duration
   useEffect(() => {
     const room = roomOptions.find((r) => r.id === selectedRoom);
     if (!room) {
       setTotalAmount(0);
       return;
     }
-
-    if (isHoursLocked) {
+    let price = 0;
+    if (hours > 24) {
       const dayRate = room.rates[24] || 0;
-      setTotalAmount(dayRate * diffDays);
+      price = dayRate * (hours / 24);
     } else {
-      const price = hours ? (room.rates[hours] || 0) : 0;
-      setTotalAmount(price);
+      price = hours ? (room.rates[hours] || 0) : 0;
     }
-  }, [selectedRoom, hours, isHoursLocked, diffDays, roomOptions]);
+    setTotalAmount(price);
+  }, [selectedRoom, hours, roomOptions]);
 
   // Strip HTML tags to prevent XSS injection
   const sanitizeString = (str) => {
@@ -321,21 +378,15 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
     // 2. Validate Date Format and Chronology
     const checkIn = new Date(checkInDate);
-    const checkOut = new Date(checkOutDate);
     const today = new Date(todayStr);
 
-    if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
+    if (isNaN(checkIn.getTime())) {
       setError('Invalid date format selected.');
       return;
     }
 
     if (checkIn < today) {
       setError('Check-in Date cannot be in the past.');
-      return;
-    }
-
-    if (checkOut < checkIn) {
-      setError('Check-out Date must be greater than or equal to Check-in Date.');
       return;
     }
 
@@ -359,7 +410,8 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
     // 4. Whitelist Stay Duration Check
     const duration = Number(hours);
-    if (![12, 24].includes(duration)) {
+    const isValidDuration = duration === 12 || (duration % 24 === 0 && duration > 0);
+    if (!isValidDuration) {
       setError('Invalid stay duration selected.');
       return;
     }
@@ -372,15 +424,15 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     }
 
     if (room.available <= 0) {
-      setError('This room is fully booked for the selected dates. Please choose another room or change your stay dates.');
+      setError('This room is fully booked for the selected stay period (including housekeeping cleaning buffer).');
       return;
     }
 
     // 6. Server-Side Verification Simulation (Recalculate Price)
     let calculatedPrice = 0;
-    if (isHoursLocked) {
+    if (duration > 24) {
       const dayRate = room.rates[24] || 0;
-      calculatedPrice = dayRate * diffDays;
+      calculatedPrice = dayRate * (duration / 24);
     } else {
       calculatedPrice = room.rates[duration] || 0;
     }
@@ -509,28 +561,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                       />
                     </Box>
 
-                    {/* Check-out Date */}
-                    <Box className="form-field-wrapper">
-                      <Typography className="field-label">Check-out Date</Typography>
-                      <FormField
-                        type="date"
-                        value={checkOutDate}
-                        onChange={(e) => setCheckOutDate(e.target.value)}
-                        inputProps={{ min: checkInDate || todayStr }}
-                        slotProps={{ htmlInput: { min: checkInDate || todayStr } }}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <CalendarTodayIcon className="form-icon" />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Box>
-                  </Box>
-
-                  <Box className="form-row">
-                    {/* Check-in Time */}
+                    {/* Check-in Time (Moved here) */}
                     <Box className="form-field-wrapper">
                       <Typography className="field-label">Check-in Time</Typography>
                       <FormField
@@ -546,30 +577,40 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                         }}
                       />
                     </Box>
+                  </Box>
 
-                    {/* Hours of Stay (Dropdown) */}
-                    <Box className="form-field-wrapper">
-                      <Typography className="field-label">Hours of Stay</Typography>
-                      <FormField
-                        select
-                        value={hours}
-                        onChange={(e) => setHours(e.target.value)}
-                        disabled={isHoursLocked}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <HourglassEmptyIcon className="form-icon" />
-                            </InputAdornment>
-                          ),
-                        }}
-                      >
-                        {HOURS_OPTIONS.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </FormField>
-                    </Box>
+                  {/* How long are you staying? Dropdown Section */}
+                  <Box sx={{ mb: 0 }}>
+                    <Typography className="field-label">How long are you staying?</Typography>
+                    <FormField
+                      select
+                      value={hours}
+                      onChange={(e) => setHours(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <HourglassEmptyIcon className="form-icon" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    >
+                      {HOURS_OPTIONS.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </FormField>
+                  </Box>
+
+                  {/* Expected Checkout Minimal Text */}
+                  <Box className="expected-checkout-minimal">
+                    <AccessTimeIcon className="expected-checkout-minimal-icon" />
+                    <Typography className="expected-checkout-minimal-text">
+                      Expected Checkout:
+                      <span className="expected-checkout-minimal-value">
+                        {checkoutDetails.display || 'Fill in Check-in details...'}
+                      </span>
+                    </Typography>
                   </Box>
 
                   {/* Select Room - Image Gallery Section */}
@@ -584,25 +625,35 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                         {roomOptions.map((room) => {
                           const isSelected = selectedRoom === room.id;
                           let rateText = '';
-                          if (isHoursLocked) {
-                            const dayRate = room.rates[24] || 0;
-                            const totalRoomPrice = dayRate * diffDays;
-                            rateText = `PHP ${totalRoomPrice.toLocaleString()} for ${diffDays} Days`;
-                          } else if (hours) {
-                            const rate = room.rates[hours] || 0;
-                            rateText = `PHP ${rate.toLocaleString()} / ${hours} Hrs`;
+                          if (hours) {
+                            const duration = Number(hours);
+                            let rate = 0;
+                            if (duration > 24) {
+                              const dayRate = room.rates[24] || 0;
+                              rate = dayRate * (duration / 24);
+                            } else {
+                              rate = room.rates[duration] || 0;
+                            }
+                            rateText = `PHP ${rate.toLocaleString()}`;
                           } else {
-                            rateText = 'Select stay hours';
+                            rateText = `PHP ${(room.rates[12] || 0).toLocaleString()}`;
                           }
 
                           return (
                             <div
                               key={room.id}
-                              className={`room-card ${isSelected ? 'selected' : ''}`}
-                              onClick={() => setSelectedRoom(room.id)}
+                              className={`room-card ${isSelected ? 'selected' : ''} ${room.available === 0 ? 'sold-out' : ''}`}
+                              onClick={() => {
+                                if (room.available > 0) {
+                                  setSelectedRoom(room.id);
+                                }
+                              }}
                             >
                               <div className="room-card-image-container">
                                 <img src={room.image} className="room-card-image" alt={room.name} />
+                                <div className={`room-availability-badge ${room.available === 0 ? 'sold-out' : room.available <= 2 ? 'low-stock' : 'in-stock'}`}>
+                                  {room.available === 0 ? 'Sold Out' : room.available === 1 ? '1 Room Left' : `${room.available} Rooms Available`}
+                                </div>
                                 {isSelected && (
                                   <div className="selected-badge">
                                     ✓
@@ -611,13 +662,38 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                               </div>
                               <div className="room-card-info">
                                 <Typography className="room-card-name">{room.name}</Typography>
-                                <div className="room-card-meta">
-                                  <Typography className="room-card-rate">
-                                    {rateText}
-                                  </Typography>
-                                  <Typography className={`room-card-status ${room.available <= 2 ? 'low' : ''}`}>
-                                    {room.available} {room.available === 1 ? 'room left' : 'rooms available'}
-                                  </Typography>
+                                <Typography className="room-card-description">
+                                  {room.description}
+                                </Typography>
+                                
+                                <Divider sx={{ my: 1.5, borderColor: '#f0edf2' }} />
+                                
+                                <div className="room-card-footer">
+                                  <Box>
+                                    <Typography className="room-card-rate-label">
+                                      {hours ? `${hours} Hours Rate` : 'Starting Rate (12h)'}
+                                    </Typography>
+                                    <Typography className="room-card-rate">
+                                      {rateText}
+                                    </Typography>
+                                  </Box>
+                                  <Button
+                                    type="button"
+                                    variant={isSelected ? "contained" : "outlined"}
+                                    size="small"
+                                    className={`room-select-btn ${isSelected ? 'selected' : ''}`}
+                                    disabled={room.available === 0}
+                                    sx={{
+                                      textTransform: 'none',
+                                      fontSize: '12px',
+                                      fontWeight: 600,
+                                      borderRadius: '6px',
+                                      py: 0.5,
+                                      px: 1.5,
+                                    }}
+                                  >
+                                    {room.available === 0 ? 'Sold Out' : isSelected ? 'Selected' : 'Select'}
+                                  </Button>
                                 </div>
                               </div>
                             </div>
@@ -739,7 +815,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                                   {formattedCheckInDate}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: '#666' }}>
-                                  at {booking.checkInTime}
+                                  at {formatTimeToAMPM(booking.checkInTime)}
                                 </Typography>
                               </Box>
                               <Box>
@@ -748,6 +824,9 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontWeight: 500, color: '#1a1a1a' }}>
                                   {formattedCheckOutDate}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#666' }}>
+                                  at {getCheckoutTime(booking.checkInTime, booking.hours)}
                                 </Typography>
                               </Box>
                               <Box>
@@ -792,7 +871,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                             <Box sx={{ mt: { xs: 2, sm: 0 }, textAlign: { xs: 'left', sm: 'right' } }}>
                               <Typography variant="caption" sx={{ color: '#666', display: 'block' }}>
                                 {/* Total Paid via Card (***{booking.paymentDetails?.cardNumberLast4}) */}
-                                Total Paid via Card
+                                Total Paid
                               </Typography>
                               <Typography variant="h5" sx={{ fontWeight: 700, color: '#990000' }}>
                                 PHP {booking.totalAmount.toLocaleString()}

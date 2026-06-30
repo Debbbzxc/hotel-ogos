@@ -96,6 +96,44 @@ const FormField = styled(TextField)({
 export default function PaymentPage({ user, reservation, onLogout, onBackToDashboard, onPaymentSuccess }) {
   const firstName = user?.firstName || 'Guest';
 
+  // Helper to format 24h time string and date into full words
+  const formatDateTime = (dateStr, timeStr) => {
+    if (!dateStr || !timeStr) return '';
+    try {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const [hour, minute] = timeStr.split(':').map(Number);
+      const dateObj = new Date(year, month - 1, day, hour, minute, 0);
+
+      const formattedDate = dateObj.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      
+      const ampm = dateObj.getHours() >= 12 ? 'PM' : 'AM';
+      let displayHour = dateObj.getHours() % 12;
+      displayHour = displayHour ? displayHour : 12;
+      const displayHourPadded = String(displayHour).padStart(2, '0');
+      const displayMin = String(dateObj.getMinutes()).padStart(2, '0');
+      
+      return `${formattedDate} at ${displayHourPadded}:${displayMin} ${ampm}`;
+    } catch (err) {
+      return `${dateStr} ${timeStr}`;
+    }
+  };
+
+  // Helper to calculate check-out time based on check-in time and stay hours
+  const getCheckoutTimeStr = (checkInTimeStr, durationHours) => {
+    if (!checkInTimeStr || !durationHours) return '';
+    const [hour, minute] = checkInTimeStr.split(':').map(Number);
+    const totalMinutes = hour * 60 + minute + durationHours * 60;
+    const endHour = Math.floor(totalMinutes / 60) % 24;
+    const endMinute = totalMinutes % 60;
+    const hr = String(endHour).padStart(2, '0');
+    const min = String(endMinute).padStart(2, '0');
+    return `${hr}:${min}`;
+  };
+
   // State management
   const [isPaying, setIsPaying] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
@@ -291,18 +329,18 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
                   </Box>
                 </Box>
 
-                <Box className="summary-details-list">
+                 <Box className="summary-details-list">
                   <div className="summary-item">
-                    <Typography className="summary-item-label">Check-in Date:</Typography>
-                    <Typography className="summary-item-val">{reservation.checkInDate}</Typography>
+                    <Typography className="summary-item-label">Check-in Date & Time:</Typography>
+                    <Typography className="summary-item-val">
+                      {formatDateTime(reservation.checkInDate, reservation.checkInTime)}
+                    </Typography>
                   </div>
                   <div className="summary-item">
-                    <Typography className="summary-item-label">Check-out Date:</Typography>
-                    <Typography className="summary-item-val">{reservation.checkOutDate}</Typography>
-                  </div>
-                  <div className="summary-item">
-                    <Typography className="summary-item-label">Check-in Time:</Typography>
-                    <Typography className="summary-item-val">{reservation.checkInTime}</Typography>
+                    <Typography className="summary-item-label">Check-out Date & Time:</Typography>
+                    <Typography className="summary-item-val">
+                      {formatDateTime(reservation.checkOutDate, getCheckoutTimeStr(reservation.checkInTime, reservation.hours))}
+                    </Typography>
                   </div>
                   {reservation.notes && (
                     <div className="summary-item notes">

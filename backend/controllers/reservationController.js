@@ -51,34 +51,43 @@ const createReservation = async (req, res) => {
     }
 
     // 4. Overbooking prevention check
-    const queryNights = getNights(checkInDate, checkOutDate);
+    const [ciYear, ciMonth, ciDay] = checkInDate.split('-').map(Number);
+    const [ciHour, ciMin] = checkInTime.split(':').map(Number);
+    const queryStart = new Date(ciYear, ciMonth - 1, ciDay, ciHour, ciMin, 0);
+    const queryEnd = new Date(queryStart.getTime() + Number(hours) * 60 * 60 * 1000);
+
     const activeReservations = await Reservation.find({
       roomType: selectedRoom,
       'paymentDetails.status': { $in: ['paid', 'pending'] }
     });
 
-    let maxOccupied = 0;
-    for (const night of queryNights) {
-      let occupiedOnNight = 0;
-      for (const resDoc of activeReservations) {
-        const resInStr = resDoc.checkInDate.toISOString().split('T')[0];
-        const resOutStr = resDoc.checkOutDate.toISOString().split('T')[0];
-        const resNights = getNights(resInStr, resOutStr);
+    let occupiedCount = 0;
+    for (const res of activeReservations) {
+      const resCiDate = new Date(res.checkInDate);
+      const [resCiHour, resCiMin] = res.checkInTime.split(':').map(Number);
+      const resStart = new Date(
+        resCiDate.getUTCFullYear(),
+        resCiDate.getUTCMonth(),
+        resCiDate.getUTCDate(),
+        resCiHour,
+        resCiMin,
+        0
+      );
+      const resEnd = new Date(resStart.getTime() + res.hours * 60 * 60 * 1000);
+      const resHousekeepingEnd = new Date(resEnd.getTime() + 30 * 60 * 1000); // 30-minute buffer
 
-        if (resNights.includes(night)) {
-          occupiedOnNight++;
-        }
-      }
-      if (occupiedOnNight > maxOccupied) {
-        maxOccupied = occupiedOnNight;
+      // Check overlap
+      const overlap = queryStart < resHousekeepingEnd && resStart < queryEnd;
+      if (overlap) {
+        occupiedCount++;
       }
     }
 
-    const availableCount = room.totalRooms - maxOccupied;
+    const availableCount = room.totalRooms - occupiedCount;
     if (availableCount <= 0) {
       return res.status(400).json({
         success: false,
-        message: `Sorry, ${room.name} is fully booked for the selected dates (${checkInDate} to ${checkOutDate}).`
+        message: `Sorry, ${room.name} is fully booked for the selected stay period (including housekeeping cleaning buffer).`
       });
     }
 
@@ -155,8 +164,40 @@ const getAllReservations = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Update reservation status (Admin only)
+ * @route   PUT /api/reservations/:id/status
+ * @access  Private/Admin
+ */
+const updateReservationStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status || !['paid', 'pending', 'cancelled'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status provided' });
+    }
+
+    const reservation = await Reservation.findById(req.params.id);
+    if (!reservation) {
+      return res.status(404).json({ success: false, message: 'Reservation not found' });
+    }
+
+    reservation.paymentDetails.status = status;
+    await reservation.save();
+
+    return res.json({
+      success: true,
+      message: `Reservation status updated to ${status} successfully.`,
+      reservation
+    });
+  } catch (error) {
+    console.error('Update reservation status error:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createReservation,
   getMyReservations,
-  getAllReservations
+  getAllReservations,
+  updateReservationStatus
 };

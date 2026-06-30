@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import PaymentPage from './pages/PaymentPage';
 
 function App() {
@@ -10,6 +11,15 @@ function App() {
   const [user, setUser] = useState(null);
   const [reservation, setReservation] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const userRef = useRef(null);
+  const reservationRef = useRef(null);
+
+  // Sync refs with latest state
+  useEffect(() => {
+    userRef.current = user;
+    reservationRef.current = reservation;
+  }, [user, reservation]);
 
   // Validate JWT on startup (Session Restore)
   useEffect(() => {
@@ -24,11 +34,16 @@ function App() {
           });
           const data = await res.json();
           if (data.success) {
+            userRef.current = data.user;
             setUser(data.user);
             // If they are on login or register, direct to dashboard
             const hash = window.location.hash;
             if (hash === '' || hash === '#login' || hash === '#register') {
-              window.location.hash = '#dashboard';
+              if (data.user.role === 'admin') {
+                window.location.hash = '#admin-dashboard';
+              } else {
+                window.location.hash = '#dashboard';
+              }
             }
           } else {
             localStorage.removeItem('token');
@@ -51,21 +66,46 @@ function App() {
 
     const handleHashChange = () => {
       const hash = window.location.hash;
+      const currentUser = userRef.current;
+      const currentReservation = reservationRef.current;
+
       if (hash === '#register') {
         setCurrentPage('register');
       } else if (hash === '#dashboard') {
-        if (user) {
-          setCurrentPage('dashboard');
+        if (currentUser) {
+          if (currentUser.role === 'admin') {
+            setCurrentPage('admin-dashboard');
+            window.location.hash = '#admin-dashboard';
+          } else {
+            setCurrentPage('dashboard');
+          }
+        } else {
+          setCurrentPage('login');
+          window.location.hash = '#login';
+        }
+      } else if (hash === '#admin-dashboard') {
+        if (currentUser) {
+          if (currentUser.role === 'admin') {
+            setCurrentPage('admin-dashboard');
+          } else {
+            setCurrentPage('dashboard');
+            window.location.hash = '#dashboard';
+          }
         } else {
           setCurrentPage('login');
           window.location.hash = '#login';
         }
       } else if (hash === '#payment') {
-        if (user && reservation) {
+        if (currentUser && currentReservation) {
           setCurrentPage('payment');
-        } else if (user) {
-          setCurrentPage('dashboard');
-          window.location.hash = '#dashboard';
+        } else if (currentUser) {
+          if (currentUser.role === 'admin') {
+            setCurrentPage('admin-dashboard');
+            window.location.hash = '#admin-dashboard';
+          } else {
+            setCurrentPage('dashboard');
+            window.location.hash = '#dashboard';
+          }
         } else {
           setCurrentPage('login');
           window.location.hash = '#login';
@@ -87,28 +127,46 @@ function App() {
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
-  }, [user, reservation, loading]);
+  }, [loading]);
 
   const handleLoginSuccess = (userData, token) => {
     localStorage.setItem('token', token);
+    userRef.current = userData;
     setUser(userData);
-    setCurrentPage('dashboard');
-    setTimeout(() => {
-      window.location.hash = '#dashboard';
-    }, 0);
+    if (userData.role === 'admin') {
+      setCurrentPage('admin-dashboard');
+      setTimeout(() => {
+        window.location.hash = '#admin-dashboard';
+      }, 0);
+    } else {
+      setCurrentPage('dashboard');
+      setTimeout(() => {
+        window.location.hash = '#dashboard';
+      }, 0);
+    }
   };
 
   const handleRegisterSuccess = (userData, token) => {
     localStorage.setItem('token', token);
+    userRef.current = userData;
     setUser(userData);
-    setCurrentPage('dashboard');
-    setTimeout(() => {
-      window.location.hash = '#dashboard';
-    }, 0);
+    if (userData.role === 'admin') {
+      setCurrentPage('admin-dashboard');
+      setTimeout(() => {
+        window.location.hash = '#admin-dashboard';
+      }, 0);
+    } else {
+      setCurrentPage('dashboard');
+      setTimeout(() => {
+        window.location.hash = '#dashboard';
+      }, 0);
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    userRef.current = null;
+    reservationRef.current = null;
     setUser(null);
     setReservation(null);
     setCurrentPage('login');
@@ -118,6 +176,7 @@ function App() {
   };
 
   const handleReservationComplete = (reservationData) => {
+    reservationRef.current = reservationData;
     setReservation(reservationData);
     setCurrentPage('payment');
     setTimeout(() => {
@@ -126,6 +185,7 @@ function App() {
   };
 
   const handlePaymentSuccess = () => {
+    reservationRef.current = null;
     setReservation(null);
     setCurrentPage('dashboard');
     setTimeout(() => {
@@ -170,6 +230,12 @@ function App() {
           user={user}
           onLogout={handleLogout}
           onReservationComplete={handleReservationComplete}
+        />
+      )}
+      {currentPage === 'admin-dashboard' && (
+        <AdminDashboardPage
+          user={user}
+          onLogout={handleLogout}
         />
       )}
       {currentPage === 'payment' && (
