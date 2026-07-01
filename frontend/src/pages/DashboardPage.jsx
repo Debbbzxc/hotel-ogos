@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import {
   Box,
   Typography,
@@ -283,7 +284,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     const fetchRooms = async () => {
       setLoadingRooms(true);
       try {
-        let url = '/api/rooms';
+        let url = `${API_URL}/api/rooms`;
         if (checkInDate && checkOutDate && checkInTime && checkoutDetails.timeStr) {
           url += `?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&checkInTime=${checkInTime}&checkOutTime=${checkoutDetails.timeStr}`;
         } else if (checkInDate && checkOutDate) {
@@ -337,7 +338,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     setLoadingBookings(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/reservations/my-reservations', {
+      const res = await fetch(`${API_URL}/api/reservations/my-reservations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

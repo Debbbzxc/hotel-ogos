@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config';
 import {
   Box,
   Typography,
@@ -212,7 +213,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/reservations', {
+      const res = await fetch(`${API_URL}/api/reservations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

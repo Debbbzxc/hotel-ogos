@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import {
   Box,
   Typography,
@@ -316,17 +317,17 @@ export default function AdminDashboardPage({ user, onLogout }) {
 
     try {
       // 1. Fetch Reservations
-      const resReservations = await fetch('/api/reservations', {
+      const resReservations = await fetch(`${API_URL}/api/reservations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dataReservations = await resReservations.json();
 
       // 2. Fetch Rooms
-      const resRooms = await fetch('/api/rooms');
+      const resRooms = await fetch(`${API_URL}/api/rooms`);
       const dataRooms = await resRooms.json();
 
       // 3. Fetch Users
-      const resUsers = await fetch('/api/auth/users', {
+      const resUsers = await fetch(`${API_URL}/api/auth/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dataUsers = await resUsers.json();
@@ -455,7 +456,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
     try {
       let res;
       if (isEditingRoom) {
-        res = await fetch(`/api/rooms/${roomId}`, {
+        res = await fetch(`${API_URL}/api/rooms/${roomId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -464,7 +465,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
           body: JSON.stringify(payload)
         });
       } else {
-        res = await fetch('/api/rooms', {
+        res = await fetch(`${API_URL}/api/rooms`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -505,12 +506,12 @@ export default function AdminDashboardPage({ user, onLogout }) {
     try {
       let res;
       if (type === 'room') {
-        res = await fetch(`/api/rooms/${id}`, {
+        res = await fetch(`${API_URL}/api/rooms/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
       } else if (type === 'user') {
-        res = await fetch(`/api/auth/users/${id}`, {
+        res = await fetch(`${API_URL}/api/auth/users/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -556,7 +557,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
     }
 
     try {
-      const res = await fetch(`/api/auth/users/${id}`, {
+      const res = await fetch(`${API_URL}/api/auth/users/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -590,7 +591,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
     }
 
     try {
-      const res = await fetch(`/api/auth/users/${u._id}/role`, {
+      const res = await fetch(`${API_URL}/api/auth/users/${u._id}/role`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -618,7 +619,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
   const handleUpdateReservationStatus = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`/api/reservations/${id}/status`, {
+      const res = await fetch(`${API_URL}/api/reservations/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_URL } from './config';
 import { Box, CircularProgress } from '@mui/material';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -27,7 +28,7 @@ function App() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const res = await fetch('/api/auth/me', {
+          const res = await fetch(`${API_URL}/api/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }

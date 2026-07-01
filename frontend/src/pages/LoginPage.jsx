@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config';
 import {
   Box,
   Typography,
@@ -111,7 +112,7 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
     }
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
