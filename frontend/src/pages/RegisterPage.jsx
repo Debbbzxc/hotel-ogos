@@ -22,17 +22,17 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import './RegisterPage.css';
 import logoImg from '../assets/logo.png';
 
-// Custom MUI Theme matching the Hotel Ogos (Sogo-inspired) palette
+
 const ogosTheme = createTheme({
   palette: {
     primary: {
-      main: '#990000', // Dark Sogo Red
-      light: '#D31027', // Vibrant Red
+      main: '#990000', 
+      light: '#D31027', 
       dark: '#730000',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#FFD700', // Gold/Yellow
+      main: '#FFD700', 
       light: '#FFF2A3',
       dark: '#B8860B',
       contrastText: '#000000',
@@ -50,12 +50,12 @@ const ogosTheme = createTheme({
   },
 });
 
-// Styled input field to mimic the mockup's flat icon block
+
 const StyledTextField = styled(TextField)({
   marginBottom: '16px',
   width: '100%',
   '& .MuiOutlinedInput-root': {
-    paddingLeft: 0, // Removes padding to let the icon wrapper touch the left border
+    paddingLeft: 0, 
     overflow: 'hidden',
     backgroundColor: '#ffffff',
     borderRadius: '6px',
@@ -78,7 +78,7 @@ const StyledTextField = styled(TextField)({
   },
 });
 
-// The left-aligned icon block styled as a red square badge
+
 const IconWrapper = styled(Box)({
   display: 'flex',
   alignItems: 'center',
@@ -105,7 +105,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // API submission handler
+  
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
@@ -126,7 +126,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
       setError('Email is required.');
       return;
     }
-    // Basic email format check
+    
     if (!/\S+@\S+\.\S+/.test(email)) {
       setError('Please enter a valid email address.');
       return;
@@ -185,7 +185,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
     <ThemeProvider theme={ogosTheme}>
       <div className="register-viewport">
         <div className="register-card">
-          {/* LEFT SIDE: RED BRAND PANEL */}
+          
           <div className="brand-panel">
             <div className="wordmark-container">
               <div className="logo-wrapper">
@@ -203,11 +203,11 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
             </div>
           </div>
 
-          {/* RIGHT SIDE: WHITE FORM PANEL */}
+          
           <div className="form-panel">
-            {/* Center Container to keep things neatly positioned */}
+            
             <div className="form-content-wrapper">
-              {/* Register Title & Subtitle */}
+              
               <div className="register-intro">
                 <Typography variant="h5" component="h1" className="register-title">
                   Register
@@ -217,9 +217,9 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
                 </Typography>
               </div>
 
-              {/* Register Form */}
+              
               <form onSubmit={handleRegister} className="register-form">
-                {/* First Name input */}
+                
                 <StyledTextField
                   placeholder="First Name"
                   variant="outlined"
@@ -236,7 +236,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
                   }}
                 />
 
-                {/* Last Name input */}
+                
                 <StyledTextField
                   placeholder="Last Name"
                   variant="outlined"
@@ -253,7 +253,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
                   }}
                 />
 
-                {/* Username input */}
+                
                 <StyledTextField
                   placeholder="Username"
                   variant="outlined"
@@ -270,7 +270,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
                   }}
                 />
 
-                {/* Email input */}
+                
                 <StyledTextField
                   placeholder="Email Address"
                   type="email"
@@ -288,7 +288,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
                   }}
                 />
 
-                {/* Password input */}
+                
                 <StyledTextField
                   placeholder="Password"
                   type={showPassword ? 'text' : 'password'}
@@ -318,7 +318,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
                   }}
                 />
 
-                {/* Confirm Password input */}
+                
                 <StyledTextField
                   placeholder="Confirm Password"
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -348,14 +348,14 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
                   }}
                 />
 
-                {/* Helper text display for validation errors */}
+                
                 {error && (
                   <Typography className="error-text" variant="caption">
                     {error}
                   </Typography>
                 )}
 
-                {/* Register Button */}
+                
                 <Button
                   type="submit"
                   variant="contained"
@@ -367,7 +367,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
                 </Button>
               </form>
 
-              {/* Already have an account? Login */}
+              
               <Box className="login-link-container">
                 <Typography variant="body2" className="login-link-text">
                   Already have an account?{' '}
@@ -381,7 +381,7 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
         </div>
       </div>
 
-      {/* Registration success message */}
+      
       <Snackbar
         open={success}
         autoHideDuration={2000}

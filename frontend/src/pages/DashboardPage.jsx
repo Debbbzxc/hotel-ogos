@@ -61,17 +61,17 @@ const roomImages = {
   mega_suite: megaSuiteImg
 };
 
-// Custom MUI Theme matching the Hotel Ogos (Sogo-inspired) palette
+
 const ogosTheme = createTheme({
   palette: {
     primary: {
-      main: '#990000', // Dark Sogo Red
-      light: '#D31027', // Vibrant Red
+      main: '#990000', 
+      light: '#D31027', 
       dark: '#730000',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#FFD700', // Gold/Yellow
+      main: '#FFD700', 
       light: '#FFF2A3',
       dark: '#B8860B',
       contrastText: '#000000',
@@ -92,7 +92,7 @@ const ogosTheme = createTheme({
   },
 });
 
-// Available stay hour options
+
 const HOURS_OPTIONS = [
   { value: 12, label: '12 Hours Short Stay' },
   { value: 24, label: '1 Day (24 Hours)' },
@@ -161,7 +161,7 @@ const TabButton = styled(Button)(({ active }) => ({
 export default function DashboardPage({ user, onLogout, onReservationComplete }) {
   const firstName = user?.firstName || 'Guest';
 
-  // Helper to format 24h time string (e.g. "14:30") to 12h AM/PM
+  
   const formatTimeToAMPM = (time24) => {
     if (!time24) return '';
     try {
@@ -176,7 +176,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     }
   };
 
-  // Helper to calculate check-out time based on check-in time and stay hours
+  
   const getCheckoutTime = (checkInTimeStr, durationHours) => {
     if (!checkInTimeStr || !durationHours) return '';
     const [hour, minute] = checkInTimeStr.split(':').map(Number);
@@ -190,18 +190,18 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     return `${displayHour}:${displayMin} ${ampm}`;
   };
 
-  // Navigation state
-  const [activeTab, setActiveTab] = useState('book'); // 'book' or 'history'
+  
+  const [activeTab, setActiveTab] = useState('book'); 
 
-  // Dynamic Room Options from API
+  
   const [roomOptions, setRoomOptions] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
 
-  // Booking history from API
+  
   const [myBookings, setMyBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
 
-  // State variables for the reservation form
+  
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
   const [checkInTime, setCheckInTime] = useState('');
@@ -213,7 +213,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Helper to calculate exact checkout date, time, and display string
+  
   const getCalculatedCheckout = () => {
     if (!checkInDate || !checkInTime || !hours) {
       return { dateStr: '', timeStr: '', display: 'Fill in Check-in details...' };
@@ -254,7 +254,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
   const checkoutDetails = getCalculatedCheckout();
 
-  // Helper to format today's date in local YYYY-MM-DD
+  
   const getTodayStr = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -265,7 +265,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
   const todayStr = getTodayStr();
 
-  // Validate check-in/out date sequence and prevent past dates
+  
   const isValidDateRange = (ci, co) => {
     if (!ci || !co) return false;
     const checkIn = new Date(ci);
@@ -279,7 +279,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     return true;
   };
 
-  // Fetch rooms list based on date ranges and times
+  
   useEffect(() => {
     const fetchRooms = async () => {
       setLoadingRooms(true);
@@ -298,7 +298,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
             image: room.imageUrl || roomImages[room.id] || roomPlaceholder
           }));
           
-          // Sort rooms from cheapest to most expensive based on 12h rate
+          
           mapped.sort((a, b) => {
             const rateA = a.rates?.[12] || 0;
             const rateB = b.rates?.[12] || 0;
@@ -307,7 +307,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
           setRoomOptions(mapped);
 
-          // Clear selection if the currently selected room has 0 available
+          
           if (selectedRoom) {
             const selectedRoomDetails = mapped.find(r => r.id === selectedRoom);
             if (selectedRoomDetails && selectedRoomDetails.available <= 0) {
@@ -324,7 +324,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     fetchRooms();
   }, [checkInDate, checkOutDate, checkInTime, checkoutDetails.timeStr]);
 
-  // Sync checkOutDate state for backend rooms availability API
+  
   useEffect(() => {
     if (checkoutDetails.dateStr) {
       setCheckOutDate(checkoutDetails.dateStr);
@@ -333,7 +333,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     }
   }, [checkInDate, checkInTime, hours]);
 
-  // Fetch Guest's past bookings
+  
   const fetchMyBookings = async () => {
     setLoadingBookings(true);
     try {
@@ -357,7 +357,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     fetchMyBookings();
   }, []);
 
-  // Dynamic price calculation based on room and stay duration
+  
   useEffect(() => {
     const room = roomOptions.find((r) => r.id === selectedRoom);
     if (!room) {
@@ -374,18 +374,18 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     setTotalAmount(price);
   }, [selectedRoom, hours, roomOptions]);
 
-  // Strip HTML tags to prevent XSS injection
+  
   const sanitizeString = (str) => {
     if (!str) return '';
     return str.replace(/<[^>]*>?/gm, '').replace(/[<>]/g, '');
   };
 
-  // Form submission handler
+  
   const handleReservation = (e) => {
     e.preventDefault();
     setError('');
 
-    // 1. Check Required Fields
+    
     if (!checkInDate) {
       setError('Check-in Date is required.');
       return;
@@ -407,7 +407,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
       return;
     }
 
-    // 2. Validate Date Format and Chronology
+    
     const checkIn = new Date(checkInDate);
     const today = new Date(todayStr);
 
@@ -421,7 +421,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
       return;
     }
 
-    // 3. Same-Day Time Validation
+    
     if (checkInDate === todayStr) {
       const now = new Date();
       const currentHour = now.getHours();
@@ -439,7 +439,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
       }
     }
 
-    // 4. Whitelist Stay Duration Check
+    
     const duration = Number(hours);
     const isValidDuration = duration === 12 || (duration % 24 === 0 && duration > 0);
     if (!isValidDuration) {
@@ -447,7 +447,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
       return;
     }
 
-    // 5. Room Verification & Availability check
+    
     const room = roomOptions.find((r) => r.id === selectedRoom);
     if (!room) {
       setError('Invalid room type selected.');
@@ -459,7 +459,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
       return;
     }
 
-    // 6. Server-Side Verification Simulation (Recalculate Price)
+    
     let calculatedPrice = 0;
     if (duration > 24) {
       const dayRate = room.rates[24] || 0;
@@ -473,7 +473,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
       return;
     }
 
-    // 7. Sanitize Notes
+    
     const sanitizedNotes = sanitizeString(notes).slice(0, 500);
 
     const reservationData = {
@@ -504,7 +504,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
   return (
     <ThemeProvider theme={ogosTheme}>
       <div className="dashboard-viewport">
-        {/* HEADER BAR */}
+        
         <header className="dashboard-header">
           <div className="header-brand-group">
             <div className="header-logo-wrapper">
@@ -536,10 +536,10 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
           </div>
         </header>
 
-        {/* MAIN BODY AREA */}
+        
         <main className="dashboard-main">
           <Box className="dashboard-content">
-            {/* Welcome banner */}
+            
             <div className="welcome-banner">
               <Typography variant="h4" className="welcome-title">
                 Welcome, {firstName}!
@@ -549,7 +549,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
               </Typography>
             </div>
 
-            {/* Premium Tab Toggles */}
+            
             <Box sx={{ display: 'flex', mb: 3.5 }}>
               <TabButton active={activeTab === 'book'} onClick={() => setActiveTab('book')}>
                 New Reservation
@@ -565,7 +565,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
               </TabButton>
             </Box>
 
-            {/* TAB CONTENT: NEW RESERVATION FORM */}
+            
             {activeTab === 'book' && (
               <Paper className="reservation-card" elevation={3}>
                 <Typography variant="h5" className="form-header">
@@ -575,7 +575,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
                 <form onSubmit={handleReservation} className="reservation-form">
                   <Box className="form-row">
-                    {/* Check-in Date */}
+                    
                     <Box className="form-field-wrapper">
                       <Typography className="field-label">Check-in Date</Typography>
                       <FormField
@@ -594,7 +594,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                       />
                     </Box>
 
-                    {/* Check-in Time (Moved here) */}
+                    
                     <Box className="form-field-wrapper">
                       <Typography className="field-label">Check-in Time</Typography>
                       <FormField
@@ -612,7 +612,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                     </Box>
                   </Box>
 
-                  {/* How long are you staying? Dropdown Section */}
+                  
                   <Box sx={{ mb: 0 }}>
                     <Typography className="field-label">How long are you staying?</Typography>
                     <FormField
@@ -635,7 +635,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                     </FormField>
                   </Box>
 
-                  {/* Expected Checkout Minimal Text */}
+                  
                   <Box className="expected-checkout-minimal">
                     <AccessTimeIcon className="expected-checkout-minimal-icon" />
                     <Typography className="expected-checkout-minimal-text">
@@ -646,7 +646,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                     </Typography>
                   </Box>
 
-                  {/* Select Room - Image Gallery Section */}
+                  
                   <Box className="gallery-section">
                     <Typography className="field-label">Select Room</Typography>
                     {loadingRooms ? (
@@ -736,7 +736,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                     )}
                   </Box>
 
-                  {/* Special Notes Section */}
+                  
                   <Box className="notes-section">
                     <Typography className="field-label">Special Notes</Typography>
                     <FormField
@@ -756,7 +756,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                     />
                   </Box>
 
-                  {/* Display Total Price */}
+                  
                   <Box className="price-display-box">
                     <Typography variant="body1" className="price-label">
                       Total Amount To Be Paid:
@@ -772,7 +772,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                     </Typography>
                   )}
 
-                  {/* Next button */}
+                  
                   <Button
                     type="submit"
                     variant="contained"
@@ -786,7 +786,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
               </Paper>
             )}
 
-            {/* TAB CONTENT: BOOKINGS HISTORY */}
+            
             {activeTab === 'history' && (
               <Box>
                 {loadingBookings ? (

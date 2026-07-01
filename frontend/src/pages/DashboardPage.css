@@ -1,8 +1,8 @@
-/* DashboardPage.css - Premium Guest Dashboard Styles for Hotel Ogos */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Viewport structure */
+
 .dashboard-viewport {
   width: 100vw;
   min-height: 100vh;
@@ -15,12 +15,12 @@
   box-sizing: border-box;
 }
 
-/* HEADER BAR - Sleek Brand Red with Gold Accent Border */
+
 .dashboard-header {
   width: 100%;
   height: 72px;
-  background-color: #990000; /* Brand Red */
-  border-bottom: 3.5px solid #FFD700; /* Gold Brand divider */
+  background-color: #990000; 
+  border-bottom: 3.5px solid #FFD700; 
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -46,7 +46,7 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  border: 2px solid #FFD700; /* Gold border */
+  border: 2px solid #FFD700; 
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -69,7 +69,7 @@
 }
 
 .header-subtitle {
-  color: #FFD700 !important; /* Gold text */
+  color: #FFD700 !important; 
   font-size: 10.5px !important;
   letter-spacing: 0.5px !important;
   text-transform: uppercase;
@@ -92,7 +92,7 @@
   font-weight: 600;
 }
 
-/* Outlined logout button */
+
 .logout-btn {
   border-color: rgba(255, 255, 255, 0.3) !important;
   color: #eaeaea !important;
@@ -111,7 +111,7 @@
   color: #ffffff !important;
 }
 
-/* MAIN CONTENT AREA */
+
 .dashboard-main {
   flex-grow: 1;
   width: 100%;
@@ -126,7 +126,7 @@
   max-width: 800px;
 }
 
-/* Welcome banner */
+
 .welcome-banner {
   margin-bottom: 28px;
 }
@@ -142,7 +142,7 @@
   font-size: 15px !important;
 }
 
-/* Reservation Card Styling */
+
 .reservation-card {
   background-color: #ffffff;
   border-radius: 12px !important;
@@ -166,7 +166,7 @@
   flex-direction: column;
 }
 
-/* Grid form row */
+
 .form-row {
   display: flex;
   gap: 24px;
@@ -194,12 +194,12 @@
   margin-right: 8px;
 }
 
-/* Focused icon highlighting when TextField is active */
+
 .Mui-focused .form-icon {
   color: #990000;
 }
 
-/* Error warning style */
+
 .error-text {
   color: #d31027 !important;
   font-weight: 500 !important;
@@ -207,7 +207,7 @@
   display: block;
 }
 
-/* Calculated Price Display Box */
+
 .price-display-box {
   background-color: rgba(255, 215, 0, 0.07);
   border: 1.5px dashed #FFD700;
@@ -233,7 +233,7 @@
   letter-spacing: -0.5px;
 }
 
-/* Stay Duration Checkboxes */
+
 .duration-checkboxes-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -272,7 +272,7 @@
   color: #1a1a1a !important;
 }
 
-/* Expected Checkout Minimal styling */
+
 .expected-checkout-minimal {
   display: flex;
   align-items: center;
@@ -303,7 +303,7 @@
   margin-left: 6px;
 }
 
-/* Gallery section container */
+
 .gallery-section {
   width: 100%;
   margin-bottom: 28px;
@@ -504,7 +504,7 @@
   margin-bottom: 28px;
 }
 
-/* Next button with style-guide hover animations */
+
 .next-btn {
   font-family: 'Poppins', sans-serif !important;
   background-color: #990000 !important;
@@ -530,7 +530,7 @@
   transform: translateY(1px);
 }
 
-/* Date & Time Picker Custom Styles & Optimizations */
+
 input[type="date"],
 input[type="time"] {
   position: relative;
@@ -539,7 +539,7 @@ input[type="time"] {
   appearance: none;
 }
 
-/* Hide default browser indicator on the right to prevent duplicate calendar icon */
+
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
   position: absolute;
@@ -549,11 +549,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   bottom: 0;
   width: 100%;
   height: 100%;
-  opacity: 0; /* Keeps it completely clickable but invisible */
+  opacity: 0; 
   cursor: pointer;
 }
 
-/* Align and clean up text edits for date inputs */
+
 input[type="date"]::-webkit-datetime-edit,
 input[type="time"]::-webkit-datetime-edit {
   display: flex;
@@ -562,12 +562,12 @@ input[type="time"]::-webkit-datetime-edit {
   padding-left: 4px;
 }
 
-/* Make empty date placeholders look like a standard prompt */
+
 input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   opacity: 0.8;
 }
 
-/* Mobile Responsiveness */
+
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 0 20px;

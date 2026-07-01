@@ -97,7 +97,7 @@ const FormField = styled(TextField)({
 export default function PaymentPage({ user, reservation, onLogout, onBackToDashboard, onPaymentSuccess }) {
   const firstName = user?.firstName || 'Guest';
 
-  // Helper to format 24h time string and date into full words
+  
   const formatDateTime = (dateStr, timeStr) => {
     if (!dateStr || !timeStr) return '';
     try {
@@ -123,7 +123,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
     }
   };
 
-  // Helper to calculate check-out time based on check-in time and stay hours
+  
   const getCheckoutTimeStr = (checkInTimeStr, durationHours) => {
     if (!checkInTimeStr || !durationHours) return '';
     const [hour, minute] = checkInTimeStr.split(':').map(Number);
@@ -135,12 +135,12 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
     return `${hr}:${min}`;
   };
 
-  // State management
+  
   const [isPaying, setIsPaying] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [error, setError] = useState('');
 
-  // Form inputs states (only Card Payment fields)
+  
   const [cardName, setCardName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -148,25 +148,25 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
 
   if (!reservation) return null;
 
-  // Retrieve room configuration
+  
   const room = {
     name: reservation.roomName || (ROOM_OPTIONS.find((r) => r.id === reservation.selectedRoom)?.name) || reservation.selectedRoom,
     image: reservation.roomImage || (ROOM_OPTIONS.find((r) => r.id === reservation.selectedRoom)?.image) || roomPlaceholder
   };
 
-  // Price invoice breakdown
+  
   const totalAmount = reservation.totalAmount;
   const baseRate = totalAmount / 1.12;
   const vatAmount = totalAmount - baseRate;
 
-  // Format Card Number (adds space every 4 digits)
+  
   const handleCardNumberInput = (val) => {
     const cleaned = val.replace(/\D/g, '').slice(0, 16);
     const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
     setCardNumber(formatted);
   };
 
-  // Format Card Expiration MM/YY
+  
   const handleExpiryInput = (val) => {
     let cleaned = val.replace(/\D/g, '').slice(0, 4);
     if (cleaned.length >= 2) {
@@ -175,7 +175,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
     setCardExpiry(cleaned);
   };
 
-  // Format CVV (max 3 digits)
+  
   const handleCvvInput = (val) => {
     const cleaned = val.replace(/\D/g, '').slice(0, 3);
     setCardCvv(cleaned);
@@ -185,7 +185,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
     e.preventDefault();
     setError('');
 
-    // Input Validation
+    
     if (!cardName.trim()) {
       setError('Cardholder name is required.');
       return;
@@ -260,7 +260,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
   return (
     <ThemeProvider theme={ogosTheme}>
       <div className="payment-viewport">
-        {/* HEADER BAR */}
+        
         <header className="payment-header">
           <div className="header-brand-group">
             <div className="header-logo-wrapper">
@@ -292,10 +292,10 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
           </div>
         </header>
 
-        {/* MAIN BODY AREA */}
+        
         <main className="payment-main">
           <Box className="payment-content">
-            {/* Header intro */}
+            
             <div className="payment-intro">
               <Button
                 startIcon={<ArrowBackIcon />}
@@ -313,7 +313,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
             </div>
 
             <Box className="payment-stack-container">
-              {/* COMBINED BOOKING & BILLING SUMMARY CARD */}
+              
               <Paper className="payment-summary-card" elevation={2}>
                 <Typography variant="h6" className="summary-header">
                   Booking Summary
@@ -377,14 +377,14 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
                 </Box>
               </Paper>
 
-              {/* CARD PAYMENT DETAILS CARD (LAST) */}
+              
               <Paper className="payment-form-card" elevation={2}>
                 <Typography variant="h6" className="payment-section-header">
                   Card Payment Details
                 </Typography>
                 <Divider className="payment-section-divider" />
 
-                {/* Card input form directly */}
+                
                 <form onSubmit={handleConfirmPayment} className="payment-input-form">
                   <Box className="form-group-fields">
                     <FormField
@@ -433,7 +433,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
                     </Typography>
                   )}
 
-                  {/* Action buttons */}
+                  
                   <div className="payment-form-actions">
                     <Button
                       type="submit"
@@ -458,7 +458,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
         </main>
       </div>
 
-      {/* Payment success modal */}
+      
       <Dialog
         open={successOpen}
         onClose={(event, reason) => {

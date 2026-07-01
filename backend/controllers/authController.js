@@ -1,47 +1,43 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// Helper to generate JWT token
+
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'supersecretjwtkey123!', {
     expiresIn: '30d'
   });
 };
 
-/**
- * @desc    Register a new user
- * @route   POST /api/auth/register
- * @access  Public
- */
+
 const registerUser = async (req, res) => {
   try {
     const { firstName, lastName, username, email, password } = req.body;
 
-    // 1. Validation
+    
     if (!firstName || !lastName || !username || !email || !password) {
       return res.status(400).json({ success: false, message: 'All registration fields are required.' });
     }
 
-    // 2. Check duplicate email
+    
     const emailExists = await User.findOne({ email: email.toLowerCase() });
     if (emailExists) {
       return res.status(400).json({ success: false, message: 'An account with this email address already exists.' });
     }
 
-    // 3. Check duplicate username
+    
     const usernameExists = await User.findOne({ username: username.toLowerCase() });
     if (usernameExists) {
       return res.status(400).json({ success: false, message: 'This username is already taken.' });
     }
 
-    // 4. Create User
+    
     const user = await User.create({
       firstName,
       lastName,
       username: username.toLowerCase(),
       email: email.toLowerCase(),
       password,
-      role: 'guest' // default role is guest
+      role: 'guest' 
     });
 
     if (user) {
@@ -66,20 +62,16 @@ const registerUser = async (req, res) => {
   }
 };
 
-/**
- * @desc    Auth user & get token
- * @route   POST /api/auth/login
- * @access  Public
- */
+
 const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body; // username can be username or email
+    const { username, password } = req.body; 
 
     if (!username || !password) {
       return res.status(400).json({ success: false, message: 'Username/Email and Password are required.' });
     }
 
-    // Find by username OR email
+    
     const user = await User.findOne({
       $or: [
         { username: username.toLowerCase() },
@@ -109,11 +101,7 @@ const loginUser = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get current user profile
- * @route   GET /api/auth/me
- * @access  Private
- */
+
 const getMe = async (req, res) => {
   try {
     return res.json({
@@ -133,11 +121,7 @@ const getMe = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get all users list (Admin only)
- * @route   GET /api/auth/users
- * @access  Private/Admin
- */
+
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select('-password').sort({ createdAt: -1 });
@@ -148,11 +132,7 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update user role (Admin only)
- * @route   PUT /api/auth/users/:id/role
- * @access  Private/Admin
- */
+
 const updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
@@ -186,11 +166,7 @@ const updateUserRole = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update user profile (Admin only)
- * @route   PUT /api/auth/users/:id
- * @access  Private/Admin
- */
+
 const updateUserProfile = async (req, res) => {
   try {
     const { firstName, lastName, username, email } = req.body;
@@ -239,11 +215,7 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-/**
- * @desc    Delete user account (Admin only)
- * @route   DELETE /api/auth/users/:id
- * @access  Private/Admin
- */
+
 const deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

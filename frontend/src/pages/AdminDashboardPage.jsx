@@ -56,7 +56,7 @@ import megaSuiteImg from '../assets/mega_suite.jpg';
 
 import './AdminDashboardPage.css';
 
-// Default static room images matching standard types
+
 const staticRoomImages = {
   premium: premiumImg,
   deluxe: deluxeImg,
@@ -87,7 +87,7 @@ const parseRoomNumber = (roomNumber) => {
   }
 };
 
-// MUI theme matching style guide
+
 const ogosTheme = createTheme({
   palette: {
     primary: {
@@ -147,7 +147,7 @@ const FormField = styled(TextField)({
 export default function AdminDashboardPage({ user, onLogout }) {
   const adminName = user ? `${user.firstName} ${user.lastName}` : 'Administrator';
 
-  // Helper to calculate exact checkout date and time for display
+  
   const getCheckoutDateTimeDisplay = (res) => {
     if (!res.checkInDate || !res.checkInTime || !res.hours) return '—';
     try {
@@ -178,7 +178,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
     }
   };
 
-  // Helper to format 24h time string (e.g. "14:30") to 12h AM/PM
+  
   const formatTimeToAMPM = (time24) => {
     if (!time24) return '';
     try {
@@ -193,7 +193,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
     }
   };
 
-  // Helper to count occupied and housekeeping units for a room type
+  
   const getLiveRoomStatuses = (room, reservationsList) => {
     const now = new Date();
     let occupied = 0;
@@ -215,7 +215,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
 
       const start = new Date(year, month, day, hour, minute, 0);
       const end = new Date(start.getTime() + res.hours * 60 * 60 * 1000);
-      const housekeepingEnd = new Date(end.getTime() + 30 * 60 * 1000); // 30-min cleanup
+      const housekeepingEnd = new Date(end.getTime() + 30 * 60 * 1000); 
 
       if (now >= start && now < end) {
         occupied++;
@@ -228,7 +228,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
     return { occupied, housekeeping, available };
   };
 
-  // Helper to determine exact real-time reservation status (including housekeeping)
+  
   const getReservationStatus = (res) => {
     if (!res.paymentDetails) return 'pending';
     if (res.paymentDetails.status === 'cancelled') return 'cancelled';
@@ -253,25 +253,25 @@ export default function AdminDashboardPage({ user, onLogout }) {
     return res.paymentDetails.status;
   };
 
-  // Navigation Tabs
-  const [activeTab, setActiveTab] = useState('overview'); // overview, reservations, rooms, guests
+  
+  const [activeTab, setActiveTab] = useState('overview'); 
 
-  // Core Data Lists
+  
   const [reservations, setReservations] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Loadings
+  
   const [loadingData, setLoadingData] = useState(true);
 
-  // Search & Filter states
+  
   const [reservationsSearch, setReservationsSearch] = useState('');
   const [reservationsStatusFilter, setReservationsStatusFilter] = useState('all');
   const [reservationsRoomFilter, setReservationsRoomFilter] = useState('all');
   const [usersSearch, setUsersSearch] = useState('');
 
-  // Dialog / Modal Form States
-  // Rooms Modal
+  
+  
   const [openRoomModal, setOpenRoomModal] = useState(false);
   const [isEditingRoom, setIsEditingRoom] = useState(false);
   const [roomFormData, setRoomFormData] = useState({
@@ -285,7 +285,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
     roomNumbers: ''
   });
 
-  // Users Modal
+  
   const [openUserModal, setOpenUserModal] = useState(false);
   const [userFormData, setUserFormData] = useState({
     id: '',
@@ -295,18 +295,18 @@ export default function AdminDashboardPage({ user, onLogout }) {
     email: ''
   });
 
-  // Delete Confirm Dialog
+  
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null); // { type: 'room'|'user', id: string, name: string }
+  const [deleteTarget, setDeleteTarget] = useState(null); 
 
-  // Alert State
+  
   const [alert, setAlert] = useState({
     open: false,
     message: '',
-    severity: 'success' // success, error, warning, info
+    severity: 'success' 
   });
 
-  // Load API Data
+  
   const fetchData = async () => {
     setLoadingData(true);
     const token = localStorage.getItem('token');
@@ -316,17 +316,17 @@ export default function AdminDashboardPage({ user, onLogout }) {
     }
 
     try {
-      // 1. Fetch Reservations
+      
       const resReservations = await fetch(`${API_URL}/api/reservations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dataReservations = await resReservations.json();
 
-      // 2. Fetch Rooms
+      
       const resRooms = await fetch(`${API_URL}/api/rooms`);
       const dataRooms = await resRooms.json();
 
-      // 3. Fetch Users
+      
       const resUsers = await fetch(`${API_URL}/api/auth/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -336,7 +336,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
         setReservations(dataReservations.reservations);
       }
       if (dataRooms.success) {
-        // Sort rooms from cheapest to most expensive based on 12h rate
+        
         const sortedRooms = [...dataRooms.rooms].sort((a, b) => {
           const rateA = a.rates?.[12] || 0;
           const rateB = b.rates?.[12] || 0;
@@ -348,7 +348,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
         setUsers(dataUsers.users);
       }
 
-      // Check auth status
+      
       if (
         dataReservations.status === 401 ||
         dataUsers.status === 401 ||
@@ -380,9 +380,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
     setAlert(prev => ({ ...prev, open: false }));
   };
 
-  // ----------------------------------------------------
-  // Room Actions
-  // ----------------------------------------------------
+  
+  
+  
   const handleOpenAddRoom = () => {
     setIsEditingRoom(false);
     setRoomFormData({
@@ -405,7 +405,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
       name: room.name,
       baseRate12: room.rates[12].toString(),
       baseRate24: room.rates[24].toString(),
-      totalRooms: room.available.toString(), // normalise value
+      totalRooms: room.available.toString(), 
       description: room.description || '',
       imageUrl: room.imageUrl || '',
       roomNumbers: room.roomNumbers ? room.roomNumbers.join(', ') : ''
@@ -532,9 +532,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
     }
   };
 
-  // ----------------------------------------------------
-  // User Profile / Role Actions
-  // ----------------------------------------------------
+  
+  
+  
   const handleOpenEditUser = (u) => {
     setUserFormData({
       id: u._id,
@@ -584,7 +584,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
     const token = localStorage.getItem('token');
     const newRole = u.role === 'admin' ? 'guest' : 'admin';
 
-    // Prevent demoting self
+    
     if (u._id === user?.id && newRole === 'guest') {
       triggerAlert('You cannot demote your own admin account.', 'warning');
       return;
@@ -613,9 +613,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
     }
   };
 
-  // ----------------------------------------------------
-  // Reservation Status Actions
-  // ----------------------------------------------------
+  
+  
+  
   const handleUpdateReservationStatus = async (id, newStatus) => {
     const token = localStorage.getItem('token');
     try {
@@ -641,18 +641,18 @@ export default function AdminDashboardPage({ user, onLogout }) {
     }
   };
 
-  // ----------------------------------------------------
-  // Analytics Helpers (Overview tab)
-  // ----------------------------------------------------
+  
+  
+  
   const calculateOverviewMetrics = () => {
-    // 1. Total revenue (from reservations that are 'paid')
+    
     const totalRev = reservations
       .filter(r => r.paymentDetails?.status === 'paid')
       .reduce((sum, r) => sum + r.totalAmount, 0);
 
-    // 2. Active occupancy rate for today
-    // Total rooms capacity in hotel
-    const totalCapacity = rooms.reduce((sum, r) => sum + r.available, 0); // using available as capacity
+    
+    
+    const totalCapacity = rooms.reduce((sum, r) => sum + r.available, 0); 
 
     const localToday = new Date();
     const year = localToday.getFullYear();
@@ -685,10 +685,10 @@ export default function AdminDashboardPage({ user, onLogout }) {
 
   const metrics = calculateOverviewMetrics();
 
-  // Popular Room Types Count
+  
   const getRoomPopularity = () => {
     const counts = {};
-    // Seed counts
+    
     rooms.forEach(r => {
       counts[r.id] = 0;
     });
@@ -710,7 +710,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
 
   const popularityList = getRoomPopularity();
 
-  // Generate SVG Line Chart Data points for last 7 days
+  
   const getLineChartPoints = () => {
     const points = [];
     const days = [];
@@ -730,7 +730,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
       counts.push(count);
     }
 
-    const maxCount = Math.max(...counts, 4); // default height scale at least 4 bookings
+    const maxCount = Math.max(...counts, 4); 
     const width = 500;
     const height = 180;
     const padding = 30;
@@ -751,7 +751,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
       }
     });
 
-    // Filled area path
+    
     let areaD = pathD;
     if (xCoords.length > 0) {
       areaD += ` L ${xCoords[xCoords.length - 1]} ${height - padding} L ${xCoords[0]} ${height - padding} Z`;
@@ -772,12 +772,12 @@ export default function AdminDashboardPage({ user, onLogout }) {
 
   const chartData = getLineChartPoints();
 
-  // ----------------------------------------------------
-  // List Filter Processors
-  // ----------------------------------------------------
+  
+  
+  
   const getFilteredReservations = () => {
     return reservations.filter(res => {
-      // Search term
+      
       const guestName = `${res.user?.firstName || ''} ${res.user?.lastName || ''}`.toLowerCase();
       const guestEmail = (res.user?.email || '').toLowerCase();
       const guestUsername = (res.user?.username || '').toLowerCase();
@@ -787,12 +787,12 @@ export default function AdminDashboardPage({ user, onLogout }) {
         guestUsername.includes(reservationsSearch.toLowerCase()) ||
         res.roomType.toLowerCase().includes(reservationsSearch.toLowerCase());
 
-      // Status
+      
       const matchesStatus =
         reservationsStatusFilter === 'all' ||
         res.paymentDetails?.status === reservationsStatusFilter;
 
-      // Room Type
+      
       const matchesRoom =
         reservationsRoomFilter === 'all' ||
         res.roomType === reservationsRoomFilter;
@@ -819,7 +819,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
   return (
     <ThemeProvider theme={ogosTheme}>
       <div className="admin-dashboard-viewport">
-        {/* Sidebar */}
+        
         <div className="admin-sidebar">
           <div className="admin-sidebar-top">
             <div className="admin-logo-wrapper">
@@ -829,7 +829,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
             <p className="admin-brand-tagline">"So Cozy... So Comfy!"</p>
             <span className="admin-badge">ADMIN CONSOLE</span>
 
-            {/* Sidebar Navigation Options */}
+            
             <div className="admin-sidebar-menu">
               <div
                 className={`admin-menu-item ${activeTab === 'overview' ? 'active' : ''}`}
@@ -879,9 +879,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
           </div>
         </div>
 
-        {/* Content Pane */}
+        
         <div className="admin-content-area">
-          {/* Header */}
+          
           <div className="admin-header">
             <div>
               <h2 className="admin-header-title">
@@ -910,12 +910,12 @@ export default function AdminDashboardPage({ user, onLogout }) {
             </Box>
           ) : (
             <>
-              {/* ---------------------------------------------------- */}
-              {/* TAB: OVERVIEW */}
-              {/* ---------------------------------------------------- */}
+              
+              
+              
               {activeTab === 'overview' && (
                 <div>
-                  {/* Stats Grid */}
+                  
                   <div className="stats-grid">
                     <div className="stat-card">
                       <div className="stat-card-left">
@@ -949,9 +949,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                     </div>
                   </div>
 
-                  {/* Charts Row */}
+                  
                   <div className="analytics-section">
-                    {/* Line Chart */}
+                    
                     <div className="chart-card">
                       <div className="chart-header">
                         <h4 className="chart-title">Daily Bookings (Last 7 Days)</h4>
@@ -966,7 +966,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                             </linearGradient>
                           </defs>
 
-                          {/* Grid Lines */}
+                          
                           <line x1={chartData.padding} y1={chartData.padding} x2={chartData.padding} y2={chartData.height - chartData.padding} className="chart-axis-line" />
                           <line x1={chartData.padding} y1={chartData.height - chartData.padding} x2={chartData.width - chartData.padding} y2={chartData.height - chartData.padding} className="chart-axis-line" />
 
@@ -977,11 +977,11 @@ export default function AdminDashboardPage({ user, onLogout }) {
                             );
                           })}
 
-                          {/* Line and Area */}
+                          
                           <path d={chartData.areaD} className="chart-area" />
                           <path d={chartData.pathD} className="chart-line" />
 
-                          {/* Data Points */}
+                          
                           {chartData.xCoords.map((x, index) => {
                             const y = chartData.yCoords[index];
                             return (
@@ -1000,7 +1000,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                       </div>
                     </div>
 
-                    {/* Popularity Card */}
+                    
                     <div className="chart-card">
                       <div className="chart-header">
                         <h4 className="chart-title">Popular Room Types</h4>
@@ -1024,7 +1024,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                     </div>
                   </div>
 
-                  {/* Recent Bookings Card */}
+                  
                   <div className="admin-card">
                     <div className="admin-card-header">
                       <h4 className="admin-card-title">Recent Booking Activities</h4>
@@ -1099,15 +1099,15 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 </div>
               )}
 
-              {/* ---------------------------------------------------- */}
-              {/* TAB: RESERVATIONS */}
-              {/* ---------------------------------------------------- */}
+              
+              
+              
               {activeTab === 'reservations' && (
                 <div className="admin-card">
                   <div className="admin-card-header">
                     <h4 className="admin-card-title">All Reservations List ({filteredReservations.length})</h4>
                     <div className="admin-card-actions">
-                      {/* Search */}
+                      
                       <div className="search-field-wrapper">
                         <SearchIcon className="search-icon" fontSize="small" />
                         <input
@@ -1119,7 +1119,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                         />
                       </div>
 
-                      {/* Room Filter */}
+                      
                       <TextField
                         select
                         size="small"
@@ -1133,7 +1133,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                         ))}
                       </TextField>
 
-                      {/* Status Filter */}
+                      
                       <TextField
                         select
                         size="small"
@@ -1182,14 +1182,10 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 {res.roomNumber && (
                                   <Typography sx={{ fontSize: '12.5px', fontWeight: 600, color: '#990000', mt: 0.5 }}>
                                     Room {res.roomNumber}
-                                    {/* <span style={{ fontSize: '11px', color: '#666', fontWeight: 400, marginLeft: '6px' }}>
-                                      (Floor {parseRoomNumber(res.roomNumber).floor}, Room {parseRoomNumber(res.roomNumber).room})
-                                    </span> */}
+                                    
                                   </Typography>
                                 )}
-                                {/* <Typography sx={{ fontSize: '11px', color: '#888', mt: 0.5 }}>
-                                  ID: {res.roomType}
-                                </Typography> */}
+                                
                               </TableCell>
                               <TableCell>
                                 <Typography sx={{ fontSize: '13px', fontWeight: 500 }}>
@@ -1206,9 +1202,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 <Typography sx={{ fontWeight: 600, color: '#990000', fontSize: '14px' }}>
                                   ₱{res.totalAmount.toLocaleString()}
                                 </Typography>
-                                {/* <Typography sx={{ fontSize: '11px', color: '#888' }}>
-                                  Method: Card
-                                </Typography> */}
+                                
                               </TableCell>
                               <TableCell>
                                 {(() => {
@@ -1276,9 +1270,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 </div>
               )}
 
-              {/* ---------------------------------------------------- */}
-              {/* TAB: ROOMS */}
-              {/* ---------------------------------------------------- */}
+              
+              
+              
               {activeTab === 'rooms' && (
                 <div>
                   <div className="admin-card" style={{ paddingBottom: '32px' }}>
@@ -1390,9 +1384,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 </div>
               )}
 
-              {/* ---------------------------------------------------- */}
-              {/* TAB: GUESTS */}
-              {/* ---------------------------------------------------- */}
+              
+              
+              
               {activeTab === 'guests' && (
                 <div className="admin-card">
                   <div className="admin-card-header">
@@ -1438,7 +1432,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   size="small"
                                   checked={u.role === 'admin'}
                                   onChange={() => handleToggleUserRole(u)}
-                                  disabled={u._id === user?.id} // Don't allow demoting yourself
+                                  disabled={u._id === user?.id} 
                                   color="primary"
                                 />
                                 <span style={{
@@ -1469,7 +1463,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                     size="small"
                                     onClick={() => handleOpenDeleteConfirm('user', u)}
                                     color="error"
-                                    disabled={u._id === user?.id} // Can't delete self
+                                    disabled={u._id === user?.id} 
                                   >
                                     <DeleteIcon fontSize="small" />
                                   </IconButton>
@@ -1494,9 +1488,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
           )}
         </div>
 
-        {/* ---------------------------------------------------- */}
-        {/* MODAL: ADD / EDIT ROOM */}
-        {/* ---------------------------------------------------- */}
+        
+        
+        
         <Dialog
           open={openRoomModal}
           onClose={() => setOpenRoomModal(false)}
@@ -1586,7 +1580,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 placeholder="Describe features, bed sizes, visual layout, amenities..."
               />
 
-              {/* Upload Base64 Image */}
+              
               <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#333' }}>
                 Room Cover Graphic
               </Typography>
@@ -1641,9 +1635,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
           </form>
         </Dialog>
 
-        {/* ---------------------------------------------------- */}
-        {/* MODAL: EDIT USER PROFILE */}
-        {/* ---------------------------------------------------- */}
+        
+        
+        
         <Dialog
           open={openUserModal}
           onClose={() => setOpenUserModal(false)}
@@ -1710,9 +1704,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
           </form>
         </Dialog>
 
-        {/* ---------------------------------------------------- */}
-        {/* DIALOG: CONFIRM DELETE */}
-        {/* ---------------------------------------------------- */}
+        
+        
+        
         <Dialog
           open={openDeleteConfirm}
           onClose={() => setOpenDeleteConfirm(false)}
@@ -1747,7 +1741,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
           </DialogActions>
         </Dialog>
 
-        {/* Snackbar Notification Alerts */}
+        
         <Snackbar
           open={alert.open}
           autoHideDuration={4000}

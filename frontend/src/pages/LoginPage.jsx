@@ -21,17 +21,17 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import './LoginPage.css';
 import logoImg from '../assets/logo.png';
 
-// Custom MUI Theme matching the Hotel Ogos (Sogo-inspired) palette
+
 const ogosTheme = createTheme({
   palette: {
     primary: {
-      main: '#990000', // Dark Sogo Red
-      light: '#D31027', // Vibrant Red
+      main: '#990000', 
+      light: '#D31027', 
       dark: '#730000',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#FFD700', // Gold/Yellow
+      main: '#FFD700', 
       light: '#FFF2A3',
       dark: '#B8860B',
       contrastText: '#000000',
@@ -49,12 +49,12 @@ const ogosTheme = createTheme({
   },
 });
 
-// Styled input field to mimic the mockup's flat icon block
+
 const StyledTextField = styled(TextField)({
   marginBottom: '20px',
   width: '100%',
   '& .MuiOutlinedInput-root': {
-    paddingLeft: 0, // Removes padding to let the icon wrapper touch the left border
+    paddingLeft: 0, 
     overflow: 'hidden',
     backgroundColor: '#ffffff',
     borderRadius: '6px',
@@ -77,7 +77,7 @@ const StyledTextField = styled(TextField)({
   },
 });
 
-// The left-aligned icon block styled as a red square badge
+
 const IconWrapper = styled(Box)({
   display: 'flex',
   alignItems: 'center',
@@ -97,7 +97,7 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // API submission handler
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -149,7 +149,7 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
     <ThemeProvider theme={ogosTheme}>
       <div className="login-viewport">
         <div className="login-card">
-          {/* LEFT SIDE: RED BRAND PANEL */}
+          
           <div className="brand-panel">
             <div className="wordmark-container">
               <div className="logo-wrapper">
@@ -167,11 +167,11 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
             </div>
           </div>
 
-          {/* RIGHT SIDE: WHITE FORM PANEL */}
+          
           <div className="form-panel">
-            {/* Center Container to keep things neatly positioned */}
+            
             <div className="form-content-wrapper">
-              {/* Login Title & Subtitle */}
+              
               <div className="login-intro">
                 <Typography variant="h5" component="h1" className="login-title">
                   Login
@@ -181,9 +181,9 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
                 </Typography>
               </div>
 
-              {/* Login Form */}
+              
               <form onSubmit={handleLogin} className="login-form">
-                {/* Username input */}
+                
                 <StyledTextField
                   placeholder="Username"
                   variant="outlined"
@@ -200,7 +200,7 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
                   }}
                 />
 
-                {/* Password input */}
+                
                 <StyledTextField
                   placeholder="Password"
                   type={showPassword ? 'text' : 'password'}
@@ -230,14 +230,14 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
                   }}
                 />
 
-                {/* Helper text display for validation errors */}
+                
                 {error && (
                   <Typography className="error-text" variant="caption">
                     {error}
                   </Typography>
                 )}
 
-                {/* Login Button */}
+                
                 <Button
                   type="submit"
                   variant="contained"
@@ -249,7 +249,7 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
                 </Button>
               </form>
 
-              {/* Don't have an account? Register */}
+              
               <Box className="register-container">
                 <Typography variant="body2" className="register-text">
                   Don't have an account?{' '}

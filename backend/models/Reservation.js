@@ -65,7 +65,7 @@ const reservationSchema = new mongoose.Schema({
   }
 });
 
-// Indexes for query speed optimization (Normalization & Optimization)
+
 reservationSchema.index({ user: 1 });
 reservationSchema.index({ roomType: 1, 'paymentDetails.status': 1 });
 reservationSchema.index({ checkInDate: 1, checkOutDate: 1 });

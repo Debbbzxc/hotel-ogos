@@ -1,4 +1,4 @@
-/* Admin Dashboard Page Stylesheet - Hotel Ogos */
+
 
 .admin-dashboard-viewport {
   display: flex;
@@ -9,7 +9,7 @@
   overflow: hidden;
 }
 
-/* Sidebar Layout */
+
 .admin-sidebar {
   width: 260px;
   background: linear-gradient(180deg, #D31027 0%, #990000 100%);
@@ -180,7 +180,7 @@
   color: #ffd700;
 }
 
-/* Content Panel Layout */
+
 .admin-content-area {
   flex-grow: 1;
   display: flex;
@@ -211,7 +211,7 @@
   margin: 4px 0 0 0;
 }
 
-/* Overview / Stats Grid */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -276,7 +276,7 @@
   color: #b8860b;
 }
 
-/* Charts and Analytics Section */
+
 .analytics-section {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -319,7 +319,7 @@
   justify-content: center;
 }
 
-/* Custom SVG Chart Styles */
+
 .chart-axis-line {
   stroke: #e5e4e7;
   stroke-width: 1;
@@ -361,7 +361,7 @@
   text-anchor: middle;
 }
 
-/* Popular Room Progress Bars */
+
 .popularity-list {
   display: flex;
   flex-direction: column;
@@ -409,7 +409,7 @@
   background-color: #ffd700;
 }
 
-/* Tables Styling */
+
 .admin-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -440,7 +440,7 @@
   align-items: center;
 }
 
-/* Status Badges */
+
 .status-badge {
   display: inline-block;
   padding: 4px 10px;
@@ -475,7 +475,7 @@
   border: 1px solid rgba(255, 165, 0, 0.3);
 }
 
-/* Custom MUI overrides for Table in Dashboard */
+
 .ogos-table-header {
   background-color: #f6f5f8;
   font-weight: 600 !important;
@@ -490,7 +490,7 @@
   background-color: rgba(153, 0, 0, 0.01) !important;
 }
 
-/* Room Management Card Grid */
+
 .room-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -605,7 +605,7 @@
   font-weight: 600 !important;
 }
 
-/* Modals & Dialog Customization */
+
 .ogos-dialog-title {
   font-family: 'Poppins', sans-serif !important;
   font-weight: 700 !important;
@@ -620,7 +620,7 @@
   gap: 12px;
 }
 
-/* Form Upload Preview Styles */
+
 .image-upload-zone {
   border: 2px dashed #e5e4e7;
   border-radius: 8px;
@@ -668,7 +668,7 @@
   background-color: rgba(211, 16, 39, 0.8) !important;
 }
 
-/* Search Bar Wrapper */
+
 .search-field-wrapper {
   display: flex;
   align-items: center;
@@ -699,7 +699,7 @@
   background: transparent;
 }
 
-/* Responsive Scaling for collapsing sidebar on smaller devices */
+
 @media (max-width: 868px) {
   .admin-dashboard-viewport {
     flex-direction: column;
@@ -742,7 +742,7 @@
     font-size: 12.5px;
   }
   .admin-sidebar-bottom {
-    display: none; /* Hide profile/logout or stack differently */
+    display: none; 
   }
   .admin-content-area {
     padding: 16px;

@@ -16,13 +16,13 @@ function App() {
   const userRef = useRef(null);
   const reservationRef = useRef(null);
 
-  // Sync refs with latest state
+  
   useEffect(() => {
     userRef.current = user;
     reservationRef.current = reservation;
   }, [user, reservation]);
 
-  // Validate JWT on startup (Session Restore)
+  
   useEffect(() => {
     const checkSession = async () => {
       const token = localStorage.getItem('token');
@@ -37,7 +37,7 @@ function App() {
           if (data.success) {
             userRef.current = data.user;
             setUser(data.user);
-            // If they are on login or register, direct to dashboard
+            
             const hash = window.location.hash;
             if (hash === '' || hash === '#login' || hash === '#register') {
               if (data.user.role === 'admin') {
@@ -52,7 +52,7 @@ function App() {
           }
         } catch (error) {
           console.error('Error fetching session:', error);
-          // Keep local user offline if server is temporarily unreachable, or clear session
+          
         }
       }
       setLoading(false);
@@ -61,9 +61,9 @@ function App() {
     checkSession();
   }, []);
 
-  // Sync state with hash change
+  
   useEffect(() => {
-    if (loading) return; // Wait until session restore is checked
+    if (loading) return; 
 
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -119,10 +119,10 @@ function App() {
       }
     };
 
-    // Listen for hashchange event
+    
     window.addEventListener('hashchange', handleHashChange);
 
-    // Initial check on load
+    
     handleHashChange();
 
     return () => {

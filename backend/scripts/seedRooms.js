@@ -5,7 +5,7 @@ const User = require('../models/User');
 
 const seedData = async () => {
   try {
-    // Check if URI is configured
+    
     if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('<db_password>')) {
       console.warn('MongoDB URI is not configured or contains placeholder <db_password>. Skipping seeding.');
       process.exit(0);
@@ -15,7 +15,7 @@ const seedData = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB!');
 
-    // 1. Seed Rooms
+    
     console.log('Seeding rooms...');
     await Room.deleteMany({});
     
@@ -75,7 +75,7 @@ const seedData = async () => {
     await Room.insertMany(rooms);
     console.log('Rooms seeded successfully!');
 
-    // 2. Seed Default Admin User
+    
     console.log('Seeding default Admin user...');
     const adminExists = await User.findOne({ username: 'admin' });
     if (!adminExists) {
@@ -95,7 +95,7 @@ const seedData = async () => {
       console.log('Admin user already exists.');
     }
 
-    // 3. Seed Sample Guest User
+    
     console.log('Seeding sample Guest user...');
     const guestExists = await User.findOne({ username: 'guest' });
     if (!guestExists) {

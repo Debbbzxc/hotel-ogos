@@ -2,14 +2,10 @@ const Reservation = require('../models/Reservation');
 const Room = require('../models/Room');
 const { validateReservation } = require('../utils/validateReservation');
 
-// Import getNights helper for database overlap calculations
+
 const { getNights } = require('./roomController');
 
-/**
- * @desc    Create a new reservation (with price forgery and real-time inventory checks)
- * @route   POST /api/reservations
- * @access  Private
- */
+
 const createReservation = async (req, res) => {
   try {
     const {
@@ -19,16 +15,16 @@ const createReservation = async (req, res) => {
       selectedRoom,
       hours,
       notes,
-      totalAmount, // clientTotalAmount
+      totalAmount, 
       paymentDetails
     } = req.body;
 
-    // 1. Validate card fields exist in request
+    
     if (!paymentDetails || !paymentDetails.cardName || !paymentDetails.cardNumber) {
       return res.status(400).json({ success: false, message: 'Card payment details are required.' });
     }
 
-    // 2. Perform price recalculation, date validation, and notes sanitization
+    
     let validatedData;
     try {
       validatedData = validateReservation({
@@ -44,13 +40,13 @@ const createReservation = async (req, res) => {
       return res.status(400).json({ success: false, message: err.message });
     }
 
-    // 3. Find Room in database to check base properties and capacity
+    
     const room = await Room.findOne({ roomId: selectedRoom });
     if (!room) {
       return res.status(404).json({ success: false, message: 'Selected room type does not exist in the database.' });
     }
 
-    // 4. Overbooking prevention check and occupied room tracking
+    
     const [ciYear, ciMonth, ciDay] = checkInDate.split('-').map(Number);
     const [ciHour, ciMin] = checkInTime.split(':').map(Number);
     const queryStart = new Date(ciYear, ciMonth - 1, ciDay, ciHour, ciMin, 0);
@@ -75,9 +71,9 @@ const createReservation = async (req, res) => {
         0
       );
       const resEnd = new Date(resStart.getTime() + res.hours * 60 * 60 * 1000);
-      const resHousekeepingEnd = new Date(resEnd.getTime() + 30 * 60 * 1000); // 30-minute buffer
+      const resHousekeepingEnd = new Date(resEnd.getTime() + 30 * 60 * 1000); 
 
-      // Check overlap
+      
       const overlap = queryStart < resHousekeepingEnd && resStart < queryEnd;
       if (overlap) {
         occupiedCount++;
@@ -95,7 +91,7 @@ const createReservation = async (req, res) => {
       });
     }
 
-    // Assign a room number
+    
     let assignedRoomNumber = '';
     if (room.roomNumbers && room.roomNumbers.length > 0) {
       for (const num of room.roomNumbers) {
@@ -106,7 +102,7 @@ const createReservation = async (req, res) => {
       }
     }
 
-    // Fallback if roomNumbers array is empty or somehow all match
+    
     if (!assignedRoomNumber) {
       if (room.roomNumbers && room.roomNumbers.length > 0) {
         assignedRoomNumber = room.roomNumbers[0];
@@ -115,14 +111,14 @@ const createReservation = async (req, res) => {
       }
     }
 
-    // 5. Calculate checkout time string (24h format, e.g. "14:30")
+    
     const [hour, minute] = checkInTime.split(':').map(Number);
     const totalMinutes = hour * 60 + minute + Number(hours) * 60;
     const endHour = Math.floor(totalMinutes / 60) % 24;
     const endMinute = totalMinutes % 60;
     const computedCheckOutTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
 
-    // 6. Create reservation document
+    
     const reservation = new Reservation({
       user: req.user._id,
       roomType: selectedRoom,
@@ -154,16 +150,12 @@ const createReservation = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get current user's reservations list
- * @route   GET /api/reservations/my-reservations
- * @access  Private
- */
+
 const getMyReservations = async (req, res) => {
   try {
     const reservations = await Reservation.find({ user: req.user._id })
       .populate('room')
-      .sort({ createdAt: -1 }); // Newest bookings first
+      .sort({ createdAt: -1 }); 
 
     return res.json({ success: true, reservations });
   } catch (error) {
@@ -172,11 +164,7 @@ const getMyReservations = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get all reservations list (Admin only)
- * @route   GET /api/reservations
- * @access  Private/Admin
- */
+
 const getAllReservations = async (req, res) => {
   try {
     const reservations = await Reservation.find({})
@@ -191,11 +179,7 @@ const getAllReservations = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update reservation status (Admin only)
- * @route   PUT /api/reservations/:id/status
- * @access  Private/Admin
- */
+
 const updateReservationStatus = async (req, res) => {
   try {
     const { status } = req.body;

@@ -1,14 +1,11 @@
-/**
- * Test Suite for validateReservation.js
- * Verifies all date, time, whitelist, XSS sanitization, and pricing integrity checks.
- */
+
 
 const assert = require('assert');
 const { validateReservation } = require('./validateReservation');
 
 console.log('Starting reservation validation tests...\n');
 
-// Helper to get formatted dates
+
 const getOffsetDateStr = (offsetDays) => {
   const date = new Date();
   date.setDate(date.getDate() + offsetDays);
@@ -34,7 +31,7 @@ function runTest(name, fn) {
   }
 }
 
-// Test 1: Happy Path - Single Day (12 hours)
+
 runTest('Happy Path - Premium Room for 12 Hours', () => {
   const payload = {
     checkInDate: tomorrowStr,
@@ -52,7 +49,7 @@ runTest('Happy Path - Premium Room for 12 Hours', () => {
   assert.strictEqual(result.notes, 'Near the elevator, please.');
 });
 
-// Test 2: Happy Path - Multi-day (2 days stay, 24 hours locked package)
+
 runTest('Happy Path - Deluxe Room for 2 Days (Multi-day stay)', () => {
   const payload = {
     checkInDate: tomorrowStr,
@@ -61,7 +58,7 @@ runTest('Happy Path - Deluxe Room for 2 Days (Multi-day stay)', () => {
     selectedRoom: 'deluxe',
     hours: 24,
     notes: '',
-    clientTotalAmount: 2810 // 1405 * 2
+    clientTotalAmount: 2810 
   };
 
   const result = validateReservation(payload);
@@ -69,7 +66,7 @@ runTest('Happy Path - Deluxe Room for 2 Days (Multi-day stay)', () => {
   assert.strictEqual(result.totalAmount, 2810);
 });
 
-// Test 3: Failure - Past Check-in Date
+
 runTest('Failure - Check-in Date in the past', () => {
   const payload = {
     checkInDate: '2025-01-01',
@@ -86,7 +83,7 @@ runTest('Failure - Check-in Date in the past', () => {
   }, /Check-in Date cannot be in the past/);
 });
 
-// Test 4: Failure - Check-out before Check-in
+
 runTest('Failure - Check-out Date before Check-in Date', () => {
   const payload = {
     checkInDate: tomorrowStr,
@@ -103,10 +100,10 @@ runTest('Failure - Check-out Date before Check-in Date', () => {
   }, /Check-out Date must be greater than or equal to Check-in Date/);
 });
 
-// Test 5: Failure - Same-Day Past Time (Dynamic calculation to guarantee past time)
+
 runTest('Failure - Check-in Time in the past for today\'s date', () => {
   const now = new Date();
-  // 30 minutes in the past
+  
   now.setMinutes(now.getMinutes() - 30);
   const pastHour = String(now.getHours()).padStart(2, '0');
   const pastMin = String(now.getMinutes()).padStart(2, '0');
@@ -127,14 +124,14 @@ runTest('Failure - Check-in Time in the past for today\'s date', () => {
   }, /Check-in Time cannot be in the past for today/);
 });
 
-// Test 6: Failure - Invalid Stay Duration (Whitelist check)
+
 runTest('Failure - Invalid Stay Duration (Whitelist violation)', () => {
   const payload = {
     checkInDate: tomorrowStr,
     checkOutDate: tomorrowStr,
     checkInTime: '12:00',
     selectedRoom: 'regency2',
-    hours: 18, // Not in [12, 24]
+    hours: 18, 
     notes: '',
     clientTotalAmount: 1135
   };
@@ -144,7 +141,7 @@ runTest('Failure - Invalid Stay Duration (Whitelist violation)', () => {
   }, /Invalid stay duration selected/);
 });
 
-// Test 7: Failure - Altered clientTotalAmount (Price verification failure)
+
 runTest('Failure - Price Payload altered (forgery check)', () => {
   const payload = {
     checkInDate: tomorrowStr,
@@ -153,7 +150,7 @@ runTest('Failure - Price Payload altered (forgery check)', () => {
     selectedRoom: 'mega_suite',
     hours: 24,
     notes: '',
-    clientTotalAmount: 1500 // Alchemist forged value (correct is 2500)
+    clientTotalAmount: 1500 
   };
 
   assert.throws(() => {
@@ -161,7 +158,7 @@ runTest('Failure - Price Payload altered (forgery check)', () => {
   }, /Price verification failed/);
 });
 
-// Test 8: Success - XSS Notes Sanitization
+
 runTest('Success - XSS script tags stripped and length sliced', () => {
   const maliciousNotes = '<script>alert("xss")</script><b>Bold Note</b>';
   const payload = {

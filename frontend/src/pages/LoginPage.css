@@ -1,8 +1,8 @@
-/* LoginPage.css - Simplified, clean full-screen split layout for Hotel Ogos */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
-/* Full viewport setup */
+
 .login-viewport {
   width: 100vw;
   height: 100vh;
@@ -14,7 +14,7 @@
   background-color: #ffffff;
 }
 
-/* Full-Screen Split Layout Card */
+
 .login-card {
   width: 100%;
   height: 100%;
@@ -23,7 +23,7 @@
   overflow: hidden;
 }
 
-/* LEFT COLUMN: Red Brand Panel (50% width, centered content) */
+
 .brand-panel {
   width: 50%;
   height: 100%;
@@ -56,7 +56,7 @@
   margin: 0 auto 20px;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  border: 4px solid #FFD700; /* Gold border to match Sogo palette */
+  border: 4px solid #FFD700; 
 }
 
 .hotel-logo {
@@ -89,7 +89,7 @@
   font-family: 'Poppins', sans-serif !important;
   font-size: 13.5px !important;
   font-weight: 600 !important;
-  color: #FFD700 !important; /* Gold color */
+  color: #FFD700 !important; 
   margin-top: 18px !important;
   letter-spacing: 1.5px !important;
   text-transform: uppercase;
@@ -101,7 +101,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* RIGHT COLUMN: White Form Panel (50% width, centered form) */
+
 .form-panel {
   width: 50%;
   height: 100%;
@@ -152,7 +152,7 @@
   display: block;
 }
 
-/* Premium styled login button */
+
 .login-btn {
   font-family: 'Poppins', sans-serif !important;
   background-color: #990000 !important;
@@ -200,7 +200,7 @@
   text-decoration: underline !important;
 }
 
-/* Mobile & Tablet Responsiveness */
+
 @media (max-width: 868px) {
   .login-card {
     flex-direction: column;

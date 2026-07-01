@@ -15,7 +15,7 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.get('/me', protect, getMe);
 
-// Admin-only User Management Routes
+
 router.get('/users', protect, adminOnly, getAllUsers);
 router.put('/users/:id/role', protect, adminOnly, updateUserRole);
 router.put('/users/:id', protect, adminOnly, updateUserProfile);

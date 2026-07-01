@@ -1,7 +1,4 @@
-/**
- * Server-side Validation Utility for Hotel Ogos Room Reservations
- * Recalculates price payload and sanitizes notes to prevent XSS.
- */
+
 
 const ROOM_RATES = {
   premium: { 12: 825, 24: 1365 },
@@ -13,17 +10,13 @@ const ROOM_RATES = {
 
 const HOURS_WHITELIST = [12, 24];
 
-/**
- * Strips HTML tags and angle brackets to prevent XSS injection.
- */
+
 function sanitizeString(str) {
   if (!str) return '';
   return str.replace(/<[^>]*>?/gm, '').replace(/[<>]/g, '');
 }
 
-/**
- * Validates the reservation payload and returns the verified price or throws an error.
- */
+
 function validateReservation(payload) {
   const {
     checkInDate,
@@ -35,12 +28,12 @@ function validateReservation(payload) {
     clientTotalAmount
   } = payload;
 
-  // 1. Check Required Fields
+  
   if (!checkInDate || !checkOutDate || !checkInTime || !selectedRoom || !hours) {
     throw new Error('All reservation fields are required.');
   }
 
-  // 2. Validate Date Formats and Chronology
+  
   const [ciYear, ciMonth, ciDay] = checkInDate.split('-').map(Number);
   const [coYear, coMonth, coDay] = checkOutDate.split('-').map(Number);
 
@@ -62,7 +55,7 @@ function validateReservation(payload) {
     throw new Error('Check-out Date must be greater than or equal to Check-in Date.');
   }
 
-  // 3. Same-Day Time Validation
+  
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -83,20 +76,20 @@ function validateReservation(payload) {
     }
   }
 
-  // 4. Validate Room ID
+  
   const roomRates = ROOM_RATES[selectedRoom];
   if (!roomRates) {
     throw new Error('Invalid room type selected.');
   }
 
-  // 5. Whitelist Stay Duration
+  
   const duration = Number(hours);
   const isValidDuration = duration === 12 || (duration % 24 === 0 && duration > 0);
   if (!isValidDuration) {
     throw new Error('Invalid stay duration selected.');
   }
 
-  // 6. Recalculate Total Price (Server-Side Source of Truth)
+  
   let calculatedPrice = 0;
   if (duration > 24) {
     const dayRate = roomRates[24];
@@ -105,12 +98,12 @@ function validateReservation(payload) {
     calculatedPrice = roomRates[duration] || 0;
   }
 
-  // 8. Server-Side Verification: Compare with Client-Side Payload
+  
   if (calculatedPrice !== Number(clientTotalAmount)) {
     throw new Error(`Price verification failed. Expected PHP ${calculatedPrice}, got PHP ${clientTotalAmount}.`);
   }
 
-  // 9. Sanitize Optional Notes
+  
   const sanitizedNotes = sanitizeString(notes).slice(0, 500);
 
   return {
