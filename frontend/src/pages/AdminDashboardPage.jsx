@@ -153,25 +153,25 @@ export default function AdminDashboardPage({ user, onLogout }) {
     try {
       const [hour, minute] = res.checkInTime.split(':').map(Number);
       const date = new Date(res.checkInDate);
-      
+
       const year = date.getUTCFullYear();
       const month = date.getUTCMonth();
       const day = date.getUTCDate();
-      
+
       const checkInDateTime = new Date(year, month, day, hour, minute, 0);
       const checkOutDateTime = new Date(checkInDateTime.getTime() + Number(res.hours) * 60 * 60 * 1000);
-      
-      const dateDisplay = checkOutDateTime.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
+
+      const dateDisplay = checkOutDateTime.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
       });
-      
+
       const ampm = checkOutDateTime.getHours() >= 12 ? 'PM' : 'AM';
       let displayHour = checkOutDateTime.getHours() % 12;
       displayHour = displayHour ? displayHour : 12;
       const displayMin = String(checkOutDateTime.getMinutes()).padStart(2, '0');
-      
+
       return `${dateDisplay} at ${displayHour}:${displayMin} ${ampm}`;
     } catch (err) {
       return new Date(res.checkOutDate).toLocaleDateString();
@@ -200,19 +200,19 @@ export default function AdminDashboardPage({ user, onLogout }) {
     let housekeeping = 0;
 
     const roomRes = reservationsList.filter(
-      r => r.roomType === room.id && 
-      r.paymentDetails?.status !== 'cancelled'
+      r => r.roomType === room.id &&
+        r.paymentDetails?.status !== 'cancelled'
     );
 
     for (const res of roomRes) {
       if (!res.checkInDate || !res.checkInTime || !res.hours) continue;
-      
+
       const [hour, minute] = res.checkInTime.split(':').map(Number);
       const date = new Date(res.checkInDate);
       const year = date.getUTCFullYear();
       const month = date.getUTCMonth();
       const day = date.getUTCDate();
-      
+
       const start = new Date(year, month, day, hour, minute, 0);
       const end = new Date(start.getTime() + res.hours * 60 * 60 * 1000);
       const housekeepingEnd = new Date(end.getTime() + 30 * 60 * 1000); // 30-min cleanup
@@ -232,7 +232,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
   const getReservationStatus = (res) => {
     if (!res.paymentDetails) return 'pending';
     if (res.paymentDetails.status === 'cancelled') return 'cancelled';
-    
+
     const now = new Date();
     try {
       const [hour, minute] = res.checkInTime.split(':').map(Number);
@@ -240,19 +240,19 @@ export default function AdminDashboardPage({ user, onLogout }) {
       const year = date.getUTCFullYear();
       const month = date.getUTCMonth();
       const day = date.getUTCDate();
-      
+
       const start = new Date(year, month, day, hour, minute, 0);
       const end = new Date(start.getTime() + res.hours * 60 * 60 * 1000);
       const housekeepingEnd = new Date(end.getTime() + 30 * 60 * 1000);
-      
+
       if (now >= end && now < housekeepingEnd) {
         return 'housekeeping';
       }
-    } catch (err) {}
-    
+    } catch (err) { }
+
     return res.paymentDetails.status;
   };
-  
+
   // Navigation Tabs
   const [activeTab, setActiveTab] = useState('overview'); // overview, reservations, rooms, guests
 
@@ -350,7 +350,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
 
       // Check auth status
       if (
-        dataReservations.status === 401 || 
+        dataReservations.status === 401 ||
         dataUsers.status === 401 ||
         (dataReservations.success === false && dataReservations.message?.includes('Not authorized'))
       ) {
@@ -781,20 +781,20 @@ export default function AdminDashboardPage({ user, onLogout }) {
       const guestName = `${res.user?.firstName || ''} ${res.user?.lastName || ''}`.toLowerCase();
       const guestEmail = (res.user?.email || '').toLowerCase();
       const guestUsername = (res.user?.username || '').toLowerCase();
-      const matchesSearch = 
-        guestName.includes(reservationsSearch.toLowerCase()) || 
+      const matchesSearch =
+        guestName.includes(reservationsSearch.toLowerCase()) ||
         guestEmail.includes(reservationsSearch.toLowerCase()) ||
         guestUsername.includes(reservationsSearch.toLowerCase()) ||
         res.roomType.toLowerCase().includes(reservationsSearch.toLowerCase());
 
       // Status
-      const matchesStatus = 
-        reservationsStatusFilter === 'all' || 
+      const matchesStatus =
+        reservationsStatusFilter === 'all' ||
         res.paymentDetails?.status === reservationsStatusFilter;
 
       // Room Type
-      const matchesRoom = 
-        reservationsRoomFilter === 'all' || 
+      const matchesRoom =
+        reservationsRoomFilter === 'all' ||
         res.roomType === reservationsRoomFilter;
 
       return matchesSearch && matchesStatus && matchesRoom;
@@ -808,9 +808,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
       const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
       const email = (u.email || '').toLowerCase();
       const username = (u.username || '').toLowerCase();
-      return name.includes(usersSearch.toLowerCase()) || 
-             email.includes(usersSearch.toLowerCase()) ||
-             username.includes(usersSearch.toLowerCase());
+      return name.includes(usersSearch.toLowerCase()) ||
+        email.includes(usersSearch.toLowerCase()) ||
+        username.includes(usersSearch.toLowerCase());
     });
   };
 
@@ -831,28 +831,28 @@ export default function AdminDashboardPage({ user, onLogout }) {
 
             {/* Sidebar Navigation Options */}
             <div className="admin-sidebar-menu">
-              <div 
+              <div
                 className={`admin-menu-item ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => setActiveTab('overview')}
               >
                 <DashboardIcon fontSize="small" />
                 <span>Overview</span>
               </div>
-              <div 
+              <div
                 className={`admin-menu-item ${activeTab === 'reservations' ? 'active' : ''}`}
                 onClick={() => setActiveTab('reservations')}
               >
                 <ReceiptIcon fontSize="small" />
                 <span>Reservations</span>
               </div>
-              <div 
+              <div
                 className={`admin-menu-item ${activeTab === 'rooms' ? 'active' : ''}`}
                 onClick={() => setActiveTab('rooms')}
               >
                 <KingBedIcon fontSize="small" />
                 <span>Room Inventory</span>
               </div>
-              <div 
+              <div
                 className={`admin-menu-item ${activeTab === 'guests' ? 'active' : ''}`}
                 onClick={() => setActiveTab('guests')}
               >
@@ -1013,7 +1013,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                               <span className="popularity-item-value">{item.count} bookings</span>
                             </div>
                             <div className="popularity-progress-bg">
-                              <div 
+                              <div
                                 className={`popularity-progress-fill ${index === 0 ? 'gold' : ''}`}
                                 style={{ width: `${item.percentage}%` }}
                               />
@@ -1028,9 +1028,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                   <div className="admin-card">
                     <div className="admin-card-header">
                       <h4 className="admin-card-title">Recent Booking Activities</h4>
-                      <Button 
-                        size="small" 
-                        variant="outlined" 
+                      <Button
+                        size="small"
+                        variant="outlined"
                         color="primary"
                         onClick={() => setActiveTab('reservations')}
                         sx={{ fontFamily: "'Poppins', sans-serif", textTransform: 'none', fontWeight: 600 }}
@@ -1110,9 +1110,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                       {/* Search */}
                       <div className="search-field-wrapper">
                         <SearchIcon className="search-icon" fontSize="small" />
-                        <input 
-                          type="text" 
-                          placeholder="Search guest or room..." 
+                        <input
+                          type="text"
+                          placeholder="Search guest or room..."
                           className="search-input"
                           value={reservationsSearch}
                           onChange={(e) => setReservationsSearch(e.target.value)}
@@ -1172,7 +1172,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   {userDetails.firstName} {userDetails.lastName}
                                 </Typography>
                                 <Typography sx={{ fontSize: '12px', color: '#666' }}>
-                                  @{userDetails.username} | {userDetails.email}
+                                  {userDetails.username} | {userDetails.email}
                                 </Typography>
                               </TableCell>
                               <TableCell>
@@ -1182,14 +1182,14 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 {res.roomNumber && (
                                   <Typography sx={{ fontSize: '12.5px', fontWeight: 600, color: '#990000', mt: 0.5 }}>
                                     Room {res.roomNumber}
-                                    <span style={{ fontSize: '11px', color: '#666', fontWeight: 400, marginLeft: '6px' }}>
+                                    {/* <span style={{ fontSize: '11px', color: '#666', fontWeight: 400, marginLeft: '6px' }}>
                                       (Floor {parseRoomNumber(res.roomNumber).floor}, Room {parseRoomNumber(res.roomNumber).room})
-                                    </span>
+                                    </span> */}
                                   </Typography>
                                 )}
-                                <Typography sx={{ fontSize: '11px', color: '#888', mt: 0.5 }}>
+                                {/* <Typography sx={{ fontSize: '11px', color: '#888', mt: 0.5 }}>
                                   ID: {res.roomType}
-                                </Typography>
+                                </Typography> */}
                               </TableCell>
                               <TableCell>
                                 <Typography sx={{ fontSize: '13px', fontWeight: 500 }}>
@@ -1206,9 +1206,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 <Typography sx={{ fontWeight: 600, color: '#990000', fontSize: '14px' }}>
                                   ₱{res.totalAmount.toLocaleString()}
                                 </Typography>
-                                <Typography sx={{ fontSize: '11px', color: '#888' }}>
+                                {/* <Typography sx={{ fontSize: '11px', color: '#888' }}>
                                   Method: Card
-                                </Typography>
+                                </Typography> */}
                               </TableCell>
                               <TableCell>
                                 {(() => {
@@ -1227,9 +1227,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 <Box sx={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                                   {res.paymentDetails?.status === 'pending' && (
                                     <Tooltip title="Mark as Paid">
-                                      <IconButton 
-                                        size="small" 
-                                        color="success" 
+                                      <IconButton
+                                        size="small"
+                                        color="success"
                                         onClick={() => handleUpdateReservationStatus(res._id, 'paid')}
                                       >
                                         <CheckCircleIcon fontSize="small" />
@@ -1238,9 +1238,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   )}
                                   {res.paymentDetails?.status !== 'cancelled' && (
                                     <Tooltip title="Cancel Booking">
-                                      <IconButton 
-                                        size="small" 
-                                        color="primary" 
+                                      <IconButton
+                                        size="small"
+                                        color="primary"
                                         onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
                                       >
                                         <CancelIcon fontSize="small" />
@@ -1249,9 +1249,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   )}
                                   {res.paymentDetails?.status === 'cancelled' && (
                                     <Tooltip title="Reactivate (Mark Pending)">
-                                      <IconButton 
-                                        size="small" 
-                                        color="default" 
+                                      <IconButton
+                                        size="small"
+                                        color="default"
                                         onClick={() => handleUpdateReservationStatus(res._id, 'pending')}
                                       >
                                         <CheckCircleIcon fontSize="small" sx={{ color: '#888' }} />
@@ -1284,8 +1284,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
                   <div className="admin-card" style={{ paddingBottom: '32px' }}>
                     <div className="admin-card-header">
                       <h4 className="admin-card-title">Hotel Room Inventory</h4>
-                      <Button 
-                        variant="contained" 
+                      <Button
+                        variant="contained"
                         color="primary"
                         startIcon={<AddIcon />}
                         onClick={handleOpenAddRoom}
@@ -1306,7 +1306,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                             <div className="admin-room-content">
                               <h5 className="admin-room-name">{room.name}</h5>
                               <p className="admin-room-desc">{room.description}</p>
-                              
+
                               <div className="admin-room-rates">
                                 <div>
                                   <span className="admin-room-rate-label">12 Hours Rate:</span>
@@ -1343,7 +1343,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   return (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12.5px', fontFamily: "'Poppins', sans-serif" }}>
                                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#555' }}>● Clean & Available:</span>
+                                        <span style={{ color: '#555' }}>● Available:</span>
                                         <span style={{ fontWeight: 600, color: '#2e7d32' }}>{stats.available} Units</span>
                                       </div>
                                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1360,9 +1360,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                               </div>
 
                               <div className="admin-room-actions">
-                                <Button 
-                                  variant="outlined" 
-                                  color="primary" 
+                                <Button
+                                  variant="outlined"
+                                  color="primary"
                                   size="small"
                                   startIcon={<EditIcon />}
                                   className="admin-room-btn"
@@ -1370,9 +1370,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 >
                                   Edit
                                 </Button>
-                                <Button 
-                                  variant="outlined" 
-                                  color="error" 
+                                <Button
+                                  variant="outlined"
+                                  color="error"
                                   size="small"
                                   startIcon={<DeleteIcon />}
                                   className="admin-room-btn"
@@ -1400,9 +1400,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
                     <div className="admin-card-actions">
                       <div className="search-field-wrapper">
                         <SearchIcon className="search-icon" fontSize="small" />
-                        <input 
-                          type="text" 
-                          placeholder="Search name, username, email..." 
+                        <input
+                          type="text"
+                          placeholder="Search name, username, email..."
                           className="search-input"
                           value={usersSearch}
                           onChange={(e) => setUsersSearch(e.target.value)}
@@ -1430,7 +1430,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                               {u.firstName} {u.lastName}
                               {u._id === user?.id && ' (You)'}
                             </TableCell>
-                            <TableCell>@{u.username}</TableCell>
+                            <TableCell>{u.username}</TableCell>
                             <TableCell>{u.email}</TableCell>
                             <TableCell>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1441,8 +1441,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   disabled={u._id === user?.id} // Don't allow demoting yourself
                                   color="primary"
                                 />
-                                <span style={{ 
-                                  fontSize: '12px', 
+                                <span style={{
+                                  fontSize: '12px',
                                   fontWeight: u.role === 'admin' ? 600 : 400,
                                   color: u.role === 'admin' ? '#990000' : '#666'
                                 }}>
@@ -1456,8 +1456,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
                             <TableCell align="right">
                               <Box sx={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                                 <Tooltip title="Edit Profile Details">
-                                  <IconButton 
-                                    size="small" 
+                                  <IconButton
+                                    size="small"
                                     onClick={() => handleOpenEditUser(u)}
                                     color="default"
                                   >
@@ -1465,8 +1465,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="Delete Account">
-                                  <IconButton 
-                                    size="small" 
+                                  <IconButton
+                                    size="small"
                                     onClick={() => handleOpenDeleteConfirm('user', u)}
                                     color="error"
                                     disabled={u._id === user?.id} // Can't delete self
@@ -1497,8 +1497,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
         {/* ---------------------------------------------------- */}
         {/* MODAL: ADD / EDIT ROOM */}
         {/* ---------------------------------------------------- */}
-        <Dialog 
-          open={openRoomModal} 
+        <Dialog
+          open={openRoomModal}
           onClose={() => setOpenRoomModal(false)}
           maxWidth="sm"
           fullWidth
@@ -1508,7 +1508,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
             <DialogTitle className="ogos-dialog-title">
               {isEditingRoom ? 'Modify Room Properties' : 'Create New Room Type'}
             </DialogTitle>
-            
+
             <DialogContent sx={{ mt: 2, pt: 1 }}>
               {!isEditingRoom && (
                 <FormField
@@ -1558,8 +1558,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 onChange={(e) => {
                   const val = e.target.value;
                   const count = val.split(',').map(n => n.trim()).filter(Boolean).length;
-                  setRoomFormData(prev => ({ 
-                    ...prev, 
+                  setRoomFormData(prev => ({
+                    ...prev,
                     roomNumbers: val,
                     totalRooms: count > 0 ? String(count) : prev.totalRooms
                   }));
@@ -1593,8 +1593,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
               {roomFormData.imageUrl ? (
                 <div className="upload-preview-wrapper">
                   <img src={roomFormData.imageUrl} alt="Room Upload Preview" className="upload-preview-img" />
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     className="remove-upload-btn"
                     onClick={handleRemoveImage}
                   >
@@ -1623,15 +1623,15 @@ export default function AdminDashboardPage({ user, onLogout }) {
             </DialogContent>
 
             <DialogActions className="ogos-dialog-actions">
-              <Button 
+              <Button
                 onClick={() => setOpenRoomModal(false)}
                 sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600, color: '#666' }}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
-                variant="contained" 
+                variant="contained"
                 color="primary"
                 sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
               >
@@ -1644,8 +1644,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
         {/* ---------------------------------------------------- */}
         {/* MODAL: EDIT USER PROFILE */}
         {/* ---------------------------------------------------- */}
-        <Dialog 
-          open={openUserModal} 
+        <Dialog
+          open={openUserModal}
           onClose={() => setOpenUserModal(false)}
           maxWidth="xs"
           fullWidth
@@ -1655,7 +1655,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
             <DialogTitle className="ogos-dialog-title">
               Edit Guest Account Profile
             </DialogTitle>
-            
+
             <DialogContent sx={{ mt: 2, pt: 1 }}>
               <Box sx={{ display: 'flex', gap: '16px' }}>
                 <FormField
@@ -1692,15 +1692,15 @@ export default function AdminDashboardPage({ user, onLogout }) {
             </DialogContent>
 
             <DialogActions className="ogos-dialog-actions">
-              <Button 
+              <Button
                 onClick={() => setOpenUserModal(false)}
                 sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600, color: '#666' }}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
-                variant="contained" 
+                variant="contained"
                 color="primary"
                 sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
               >
@@ -1723,20 +1723,20 @@ export default function AdminDashboardPage({ user, onLogout }) {
           </DialogTitle>
           <DialogContent sx={{ mt: 2 }}>
             <DialogContentText sx={{ fontFamily: "'Poppins', sans-serif", color: '#1a1a1a' }}>
-              Are you absolutely sure you want to permanently delete <strong>{deleteTarget?.name}</strong>? 
-              This action is destructive and cannot be undone. 
+              Are you absolutely sure you want to permanently delete <strong>{deleteTarget?.name}</strong>?
+              This action is destructive and cannot be undone.
               {deleteTarget?.type === 'room' && " Any reservations associated with this room must be completed or cancelled first."}
               {deleteTarget?.type === 'user' && " Any active user sessions or settings for this user will be cleared."}
             </DialogContentText>
           </DialogContent>
           <DialogActions className="ogos-dialog-actions">
-            <Button 
+            <Button
               onClick={() => setOpenDeleteConfirm(false)}
               sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600, color: '#666' }}
             >
               No, Keep
             </Button>
-            <Button 
+            <Button
               onClick={handleDeleteExecute}
               variant="contained"
               color="error"
@@ -1748,16 +1748,16 @@ export default function AdminDashboardPage({ user, onLogout }) {
         </Dialog>
 
         {/* Snackbar Notification Alerts */}
-        <Snackbar 
-          open={alert.open} 
-          autoHideDuration={4000} 
+        <Snackbar
+          open={alert.open}
+          autoHideDuration={4000}
           onClose={handleCloseAlert}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          <Alert 
-            onClose={handleCloseAlert} 
-            severity={alert.severity} 
-            variant="filled" 
+          <Alert
+            onClose={handleCloseAlert}
+            severity={alert.severity}
+            variant="filled"
             sx={{ width: '100%', fontFamily: "'Poppins', sans-serif", borderRadius: '8px' }}
           >
             {alert.message}
