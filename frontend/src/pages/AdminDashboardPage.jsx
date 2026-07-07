@@ -45,6 +45,10 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 import logoImg from '../assets/logo.png';
 import roomPlaceholder from '../assets/room_placeholder.png';
@@ -264,6 +268,235 @@ export default function AdminDashboardPage({ user, onLogout }) {
   
   const [loadingData, setLoadingData] = useState(true);
 
+  const [reportSummary, setReportSummary] = useState(null);
+  const [reportTransactions, setReportTransactions] = useState([]);
+  const [loadingReport, setLoadingReport] = useState(false);
+
+  const fetchReportData = async () => {
+    setLoadingReport(true);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      onLogout();
+      return;
+    }
+    try {
+      const resSummary = await fetch(`${API_URL}/api/reservations/summary`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const dataSummary = await resSummary.json();
+
+      const resTransactions = await fetch(`${API_URL}/api/reservations/transactions`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const dataTransactions = await resTransactions.json();
+
+      if (dataSummary.success) {
+        setReportSummary(dataSummary.data);
+      }
+      if (dataTransactions.success) {
+        setReportTransactions(dataTransactions.data);
+      }
+    } catch (error) {
+      console.error('Error fetching report data:', error);
+      triggerAlert('Failed to fetch summary report data.', 'error');
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    if (!reportSummary || !reportTransactions.length) {
+      triggerAlert('Report data is not loaded yet.', 'warning');
+      return;
+    }
+
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    const primaryColor = '#990000';
+    const secondaryColor = '#FFD700';
+    const darkGray = '#333333';
+    const lightGray = '#888888';
+
+    doc.setFillColor(primaryColor);
+    doc.rect(0, 0, pageWidth, 90, 'F');
+
+    doc.setTextColor('#FFFFFF');
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(24);
+    doc.text('HOTEL OGOS', 40, 45);
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(secondaryColor);
+    doc.text('"So Cozy... So Comfy!"', 40, 60);
+
+    doc.setFontSize(14);
+    doc.setTextColor('#FFFFFF');
+    doc.text('SUMMARY & TRANSACTION REPORT', pageWidth - 40, 50, { align: 'right' });
+
+    doc.setFontSize(9);
+    doc.setTextColor('#EEEEEE');
+    const dateStr = new Date().toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    doc.text(`Generated: ${dateStr}`, pageWidth - 40, 68, { align: 'right' });
+
+    let currentY = 130;
+    doc.setTextColor(primaryColor);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('I. EXECUTIVE SUMMARY', 40, currentY);
+    
+    doc.setDrawColor(secondaryColor);
+    doc.setLineWidth(2);
+    doc.line(40, currentY + 5, 200, currentY + 5);
+
+    currentY += 25;
+    
+    const summaryCards = [
+      { label: 'Total Revenue', value: `PHP ${reportSummary.totalRevenue.toLocaleString()}` },
+      { label: 'Total Reservations', value: String(reportSummary.totalReservations) },
+      { label: 'Total Guests', value: String(reportSummary.totalGuests) },
+      { label: 'Total Rooms Capacity', value: String(reportSummary.totalRooms) }
+    ];
+
+    doc.setFontSize(10);
+    summaryCards.forEach((card, idx) => {
+      const col = idx % 2;
+      const row = Math.floor(idx / 2);
+      const x = 40 + col * 260;
+      const y = currentY + row * 55;
+
+      doc.setFillColor('#F9F9F9');
+      doc.setDrawColor('#E5E4E7');
+      doc.setLineWidth(1);
+      doc.rect(x, y, 240, 45, 'FD');
+
+      doc.setTextColor(lightGray);
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(card.label.toUpperCase(), x + 15, y + 18);
+
+      doc.setTextColor(primaryColor);
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text(card.value, x + 15, y + 36);
+    });
+
+    currentY += 120;
+
+    doc.setTextColor(primaryColor);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('RESERVATIONS STATUS BREAKDOWN', 40, currentY);
+    doc.line(40, currentY + 5, 250, currentY + 5);
+
+    currentY += 20;
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(darkGray);
+    
+    const paidCount = reportSummary.reservationsByStatus?.paid || 0;
+    const pendingCount = reportSummary.reservationsByStatus?.pending || 0;
+    const cancelledCount = reportSummary.reservationsByStatus?.cancelled || 0;
+    doc.text(`Paid: ${paidCount} reservations`, 45, currentY);
+    doc.text(`Pending: ${pendingCount} reservations`, 45, currentY + 15);
+    doc.text(`Cancelled: ${cancelledCount} reservations`, 45, currentY + 30);
+
+    doc.setTextColor(primaryColor);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('TOP ROOM TYPES POPULARITY', 320, currentY - 20);
+    doc.line(320, currentY - 15, 500, currentY - 15);
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(darkGray);
+    (reportSummary.topRoomTypes || []).forEach((room, index) => {
+      doc.text(`${index + 1}. ${room.name.replace('_', ' ').toUpperCase()} (${room.totalReservations} bookings)`, 325, currentY + index * 15);
+    });
+
+    currentY += 60;
+
+    doc.setTextColor(primaryColor);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('II. RECENT TRANSACTIONS', 40, currentY);
+    doc.line(40, currentY + 5, 210, currentY + 5);
+
+    currentY += 15;
+
+    const tableHeaders = [['Date', 'Guest Name', 'Room Type', 'Stay Detail', 'Amount', 'Status']];
+    const tableBody = reportTransactions.map(tx => [
+      new Date(tx.timestamp || tx.createdAt).toLocaleDateString(),
+      tx.guestName || 'Guest',
+      (tx.roomType || '').replace('_', ' ').toUpperCase(),
+      `${tx.hours} hrs`,
+      `PHP ${tx.amount.toLocaleString()}`,
+      (tx.status || 'pending').toUpperCase()
+    ]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: tableHeaders,
+      body: tableBody,
+      theme: 'striped',
+      headStyles: {
+        fillColor: primaryColor,
+        textColor: '#FFFFFF',
+        fontStyle: 'bold',
+        fontSize: 9
+      },
+      styles: {
+        fontSize: 8.5,
+        font: 'Helvetica',
+        cellPadding: 6
+      },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 100 },
+        2: { cellWidth: 100 },
+        3: { cellWidth: 60 },
+        4: { cellWidth: 70, halign: 'right' },
+        5: { cellWidth: 60, halign: 'center' }
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 5 && data.cell.section === 'body') {
+          const val = data.cell.raw;
+          if (val === 'PAID') {
+            data.cell.styles.textColor = '#2e7d32';
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'CANCELLED') {
+            data.cell.styles.textColor = '#d31027';
+            data.cell.styles.fontStyle = 'bold';
+          } else {
+            data.cell.styles.textColor = '#b8860b';
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      },
+      margin: { left: 40, right: 40, bottom: 40 }
+    });
+
+    const totalPages = doc.internal.pages.length - 1;
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(lightGray);
+      doc.text(`Page ${i} of ${totalPages}`, pageWidth - 40, pageHeight - 30, { align: 'right' });
+      doc.text('Hotel Ogos System Admin Administration', 40, pageHeight - 30);
+    }
+
+    doc.save(`hotel-ogos-summary-report-${new Date().toISOString().slice(0,10)}.pdf`);
+    triggerAlert('PDF Report downloaded successfully!', 'success');
+  };
+
   
   const [reservationsSearch, setReservationsSearch] = useState('');
   const [reservationsStatusFilter, setReservationsStatusFilter] = useState('all');
@@ -367,6 +600,12 @@ export default function AdminDashboardPage({ user, onLogout }) {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'summaryReport') {
+      fetchReportData();
+    }
+  }, [activeTab]);
 
   const triggerAlert = (message, severity = 'success') => {
     setAlert({
@@ -859,6 +1098,13 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 <PeopleIcon fontSize="small" />
                 <span>Guests Manager</span>
               </div>
+              <div
+                className={`admin-menu-item ${activeTab === 'summaryReport' ? 'active' : ''}`}
+                onClick={() => setActiveTab('summaryReport')}
+              >
+                <AssessmentIcon fontSize="small" />
+                <span>Summary Report</span>
+              </div>
             </div>
           </div>
 
@@ -889,12 +1135,14 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 {activeTab === 'reservations' && 'Manage Reservations'}
                 {activeTab === 'rooms' && 'Room Inventory & Pricing'}
                 {activeTab === 'guests' && 'Registered Guests Directory'}
+                {activeTab === 'summaryReport' && 'Summary & Transaction Report'}
               </h2>
               <p className="admin-header-subtitle">
                 {activeTab === 'overview' && 'Real-time performance metrics and booking stats.'}
                 {activeTab === 'reservations' && 'Confirm, modify, or cancel system bookings.'}
                 {activeTab === 'rooms' && 'Configure room specifications, rates, and upload graphics.'}
                 {activeTab === 'guests' && 'Edit user profiles, adjust access levels, or delete accounts.'}
+                {activeTab === 'summaryReport' && 'Comprehensive summaries and recent system transactions.'}
               </p>
             </div>
             <div className="admin-badge" style={{ margin: 0, padding: '6px 14px', fontSize: '11px', color: '#1a1a1a', backgroundColor: '#ffd700' }}>
@@ -1482,6 +1730,204 @@ export default function AdminDashboardPage({ user, onLogout }) {
                       </TableBody>
                     </Table>
                   </TableContainer>
+                </div>
+              )}
+
+              {activeTab === 'summaryReport' && (
+                <div className="report-tab-container">
+                  {loadingReport ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40vh' }}>
+                      <CircularProgress sx={{ color: '#990000' }} />
+                    </Box>
+                  ) : (
+                    <>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 700, m: 0, color: '#990000' }}>
+                          Report Data Summary
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<FileDownloadIcon />}
+                          onClick={handleExportPDF}
+                          disabled={!reportSummary}
+                          sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
+                        >
+                          Export to PDF
+                        </Button>
+                      </Box>
+
+                      {reportSummary && (
+                        <div>
+                          {/* Key Statistics Grid */}
+                          <div className="stats-grid" style={{ marginBottom: '24px' }}>
+                            <div className="stat-card">
+                              <div className="stat-card-left">
+                                <span className="stat-card-label">Total Revenue</span>
+                                <h3 className="stat-card-value">₱{reportSummary.totalRevenue?.toLocaleString()}</h3>
+                              </div>
+                              <div className="stat-card-icon-wrapper">
+                                <Typography sx={{ fontWeight: 'bold', fontSize: '20px' }}>₱</Typography>
+                              </div>
+                            </div>
+
+                            <div className="stat-card">
+                              <div className="stat-card-left">
+                                <span className="stat-card-label">Total Reservations</span>
+                                <h3 className="stat-card-value">{reportSummary.totalReservations}</h3>
+                              </div>
+                              <div className="stat-card-icon-wrapper">
+                                <ReceiptIcon />
+                              </div>
+                            </div>
+
+                            <div className="stat-card">
+                              <div className="stat-card-left">
+                                <span className="stat-card-label">Total Guests</span>
+                                <h3 className="stat-card-value">{reportSummary.totalGuests}</h3>
+                              </div>
+                              <div className="stat-card-icon-wrapper">
+                                <PeopleIcon />
+                              </div>
+                            </div>
+
+                            <div className="stat-card gold-card">
+                              <div className="stat-card-left">
+                                <span className="stat-card-label">Rooms Capacity</span>
+                                <h3 className="stat-card-value">{reportSummary.totalRooms} <span style={{ fontSize: '12px', color: '#666' }}>Units</span></h3>
+                              </div>
+                              <div className="stat-card-icon-wrapper">
+                                <KingBedIcon />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Extra Summary Insights */}
+                          <div className="analytics-section" style={{ marginBottom: '32px' }}>
+                            {/* Status Metrics */}
+                            <div className="chart-card">
+                              <div className="chart-header">
+                                <h4 className="chart-title">Reservations Status Breakdown</h4>
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '10px 0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '14px', fontWeight: 500 }}>Paid Reservations</span>
+                                  <span className="status-badge paid" style={{ fontSize: '13px', padding: '4px 12px' }}>
+                                    {reportSummary.reservationsByStatus?.paid || 0}
+                                  </span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '14px', fontWeight: 500 }}>Pending Reservations</span>
+                                  <span className="status-badge pending" style={{ fontSize: '13px', padding: '4px 12px' }}>
+                                    {reportSummary.reservationsByStatus?.pending || 0}
+                                  </span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '14px', fontWeight: 500 }}>Cancelled Reservations</span>
+                                  <span className="status-badge cancelled" style={{ fontSize: '13px', padding: '4px 12px' }}>
+                                    {reportSummary.reservationsByStatus?.cancelled || 0}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Popularity */}
+                            <div className="chart-card">
+                              <div className="chart-header">
+                                <h4 className="chart-title">Top Demanded Room Types</h4>
+                              </div>
+                              <div className="popularity-list">
+                                {(reportSummary.topRoomTypes || []).map((item, index) => {
+                                  const totalCount = Math.max(...(reportSummary.topRoomTypes || []).map(r => r.totalReservations), 1);
+                                  const percentage = Math.round((item.totalReservations / totalCount) * 100);
+                                  return (
+                                    <div key={index} className="popularity-item">
+                                      <div className="popularity-item-header">
+                                        <span className="popularity-item-name" style={{ textTransform: 'capitalize' }}>
+                                          {item.name.replace('_', ' ')}
+                                        </span>
+                                        <span className="popularity-item-value">{item.totalReservations} bookings</span>
+                                      </div>
+                                      <div className="popularity-progress-bg">
+                                        <div
+                                          className={`popularity-progress-fill ${index === 0 ? 'gold' : ''}`}
+                                          style={{ width: `${percentage}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                                {(!reportSummary.topRoomTypes || reportSummary.topRoomTypes.length === 0) && (
+                                  <Typography sx={{ color: '#666', fontStyle: 'italic', textAlign: 'center', py: 3 }}>
+                                    No room reservation details available.
+                                  </Typography>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Recent Transactions List */}
+                          <div className="admin-card">
+                            <div className="admin-card-header">
+                              <h4 className="admin-card-title">Recent Transactions Ledger (Latest 50)</h4>
+                            </div>
+                            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e4e7', borderRadius: '8px' }}>
+                              <Table size="medium">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell className="ogos-table-header">Date</TableCell>
+                                    <TableCell className="ogos-table-header">Guest Info</TableCell>
+                                    <TableCell className="ogos-table-header">Room Type</TableCell>
+                                    <TableCell className="ogos-table-header">Stay Details</TableCell>
+                                    <TableCell className="ogos-table-header">Amount</TableCell>
+                                    <TableCell className="ogos-table-header" align="center">Status</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {reportTransactions.map((tx) => (
+                                    <TableRow key={tx._id} className="ogos-table-row">
+                                      <TableCell sx={{ fontWeight: 500 }}>
+                                        {new Date(tx.timestamp || tx.createdAt).toLocaleDateString()}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Typography sx={{ fontWeight: 600, fontSize: '13.5px' }}>
+                                          {tx.guestName}
+                                        </Typography>
+                                        <Typography sx={{ fontSize: '11px', color: '#666' }}>
+                                          {tx.guestEmail}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
+                                        {tx.roomType.replace('_', ' ')}
+                                      </TableCell>
+                                      <TableCell>
+                                        {tx.hours} Hours Stay
+                                      </TableCell>
+                                      <TableCell sx={{ fontWeight: 600, color: '#990000' }}>
+                                        ₱{tx.amount?.toLocaleString()}
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        <span className={`status-badge ${tx.status || 'pending'}`}>
+                                          {tx.status || 'pending'}
+                                        </span>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                  {reportTransactions.length === 0 && (
+                                    <TableRow>
+                                      <TableCell colSpan={6} align="center" sx={{ py: 5, color: '#666' }}>
+                                        No recent transactions recorded.
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </>
