@@ -213,25 +213,35 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/reservations`, {
-        method: 'POST',
+      const isPending = !!reservation._id;
+      const url = isPending ? `${API_URL}/api/reservations/${reservation._id}/pay` : `${API_URL}/api/reservations`;
+      const method = isPending ? 'PUT' : 'POST';
+      const body = isPending ? {
+        paymentDetails: {
+          cardName: cardName.trim(),
+          cardNumber: rawCard
+        }
+      } : {
+        checkInDate: reservation.checkInDate,
+        checkOutDate: reservation.checkOutDate,
+        checkInTime: reservation.checkInTime,
+        selectedRoom: reservation.selectedRoom,
+        hours: reservation.hours,
+        notes: reservation.notes,
+        totalAmount: reservation.totalAmount,
+        paymentDetails: {
+          cardName: cardName.trim(),
+          cardNumber: rawCard
+        }
+      };
+
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          checkInDate: reservation.checkInDate,
-          checkOutDate: reservation.checkOutDate,
-          checkInTime: reservation.checkInTime,
-          selectedRoom: reservation.selectedRoom,
-          hours: reservation.hours,
-          notes: reservation.notes,
-          totalAmount: reservation.totalAmount,
-          paymentDetails: {
-            cardName: cardName.trim(),
-            cardNumber: rawCard
-          }
-        })
+        body: JSON.stringify(body)
       });
 
       const data = await res.json();

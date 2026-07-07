@@ -19,9 +19,12 @@ const createReservation = async (req, res) => {
       paymentDetails
     } = req.body;
 
-    
-    if (!paymentDetails || !paymentDetails.cardName || !paymentDetails.cardNumber) {
-      return res.status(400).json({ success: false, message: 'Card payment details are required.' });
+    const status = paymentDetails?.status || 'paid';
+
+    if (status === 'paid') {
+      if (!paymentDetails || !paymentDetails.cardName || !paymentDetails.cardNumber) {
+        return res.status(400).json({ success: false, message: 'Card payment details are required.' });
+      }
     }
 
     
@@ -132,8 +135,8 @@ const createReservation = async (req, res) => {
       totalAmount: validatedData.totalAmount,
       roomNumber: assignedRoomNumber,
       paymentDetails: {
-        status: 'paid',
-        paidAt: new Date()
+        status: status,
+        paidAt: status === 'paid' ? new Date() : null
       }
     });
 
@@ -141,7 +144,7 @@ const createReservation = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Reservation created and paid successfully.',
+      message: status === 'paid' ? 'Reservation created and paid successfully.' : 'Reservation created successfully (Pending payment).',
       reservation: savedReservation
     });
   } catch (error) {
@@ -193,6 +196,9 @@ const updateReservationStatus = async (req, res) => {
     }
 
     reservation.paymentDetails.status = status;
+    if (status === 'paid') {
+      reservation.paymentDetails.paidAt = new Date();
+    }
     await reservation.save();
 
     return res.json({
@@ -206,9 +212,49 @@ const updateReservationStatus = async (req, res) => {
   }
 };
 
+const payReservation = async (req, res) => {
+  try {
+    const { paymentDetails } = req.body;
+    if (!paymentDetails || !paymentDetails.cardName || !paymentDetails.cardNumber) {
+      return res.status(400).json({ success: false, message: 'Card payment details are required.' });
+    }
+
+    const reservation = await Reservation.findById(req.params.id);
+    if (!reservation) {
+      return res.status(404).json({ success: false, message: 'Reservation not found.' });
+    }
+
+    if (reservation.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not authorized to pay for this reservation.' });
+    }
+
+    if (reservation.paymentDetails.status === 'paid') {
+      return res.status(400).json({ success: false, message: 'Reservation is already paid.' });
+    }
+
+    if (reservation.paymentDetails.status === 'cancelled') {
+      return res.status(400).json({ success: false, message: 'Cannot pay for a cancelled reservation.' });
+    }
+
+    reservation.paymentDetails.status = 'paid';
+    reservation.paymentDetails.paidAt = new Date();
+    await reservation.save();
+
+    return res.json({
+      success: true,
+      message: 'Reservation paid successfully.',
+      reservation
+    });
+  } catch (error) {
+    console.error('Pay reservation error:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createReservation,
   getMyReservations,
   getAllReservations,
-  updateReservationStatus
+  updateReservationStatus,
+  payReservation
 };

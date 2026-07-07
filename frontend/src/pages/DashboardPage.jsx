@@ -161,6 +161,50 @@ const TabButton = styled(Button)(({ active }) => ({
 export default function DashboardPage({ user, onLogout, onReservationComplete }) {
   const firstName = user?.firstName || 'Guest';
 
+  const getStatusStyles = (status) => {
+    const normalized = (status || 'paid').toLowerCase();
+    switch (normalized) {
+      case 'paid':
+        return {
+          backgroundColor: 'rgba(76, 175, 80, 0.12)',
+          color: '#2e7d32',
+          border: '1px solid rgba(76, 175, 80, 0.3)'
+        };
+      case 'pending':
+        return {
+          backgroundColor: 'rgba(255, 215, 0, 0.12)',
+          color: '#b8860b',
+          border: '1px solid #FFD700'
+        };
+      case 'cancelled':
+        return {
+          backgroundColor: 'rgba(211, 16, 39, 0.1)',
+          color: '#d31027',
+          border: '1px solid rgba(211, 16, 39, 0.3)'
+        };
+      default:
+        return {
+          backgroundColor: 'rgba(0, 0, 0, 0.05)',
+          color: '#666666',
+          border: '1px solid rgba(0, 0, 0, 0.1)'
+        };
+    }
+  };
+
+  const getStatusBorderColor = (status) => {
+    const normalized = (status || 'paid').toLowerCase();
+    switch (normalized) {
+      case 'paid':
+        return '#2e7d32';
+      case 'pending':
+        return '#FFD700';
+      case 'cancelled':
+        return '#d31027';
+      default:
+        return '#cccccc';
+    }
+  };
+
   
   const formatTimeToAMPM = (time24) => {
     if (!time24) return '';
@@ -381,7 +425,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
   };
 
   
-  const handleReservation = (e) => {
+  const handleReservation = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -476,25 +520,48 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
     
     const sanitizedNotes = sanitizeString(notes).slice(0, 500);
 
-    const reservationData = {
-      checkInDate,
-      checkOutDate,
-      checkInTime,
-      selectedRoom,
-      hours: duration,
-      notes: sanitizedNotes,
-      totalAmount: calculatedPrice,
-      roomName: room.name,
-      roomImage: room.imageUrl || roomImages[room.id] || roomPlaceholder
-    };
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/reservations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          checkInDate,
+          checkOutDate,
+          checkInTime,
+          selectedRoom,
+          hours: duration,
+          notes: sanitizedNotes,
+          totalAmount: calculatedPrice,
+          paymentDetails: {
+            status: 'pending'
+          }
+        })
+      });
 
-    setSuccess(true);
-
-    setTimeout(() => {
-      if (onReservationComplete) {
-        onReservationComplete(reservationData);
+      const data = await res.json();
+      if (data.success) {
+        setSuccess(true);
+        const reservationData = {
+          ...data.reservation,
+          roomName: room.name,
+          roomImage: room.imageUrl || roomImages[room.id] || roomPlaceholder
+        };
+        setTimeout(() => {
+          if (onReservationComplete) {
+            onReservationComplete(reservationData);
+          }
+        }, 1200);
+      } else {
+        setError(data.message || 'Failed to create pending reservation.');
       }
-    }, 1200);
+    } catch (err) {
+      console.error('Error creating pending reservation:', err);
+      setError('Failed to reach reservation server. Please try again.');
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -825,7 +892,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                           p: 3.5,
                           mb: 2.5,
                           borderRadius: '10px',
-                          borderLeft: '5.5px solid #FFD700',
+                          borderLeft: `5.5px solid ${getStatusBorderColor(booking.paymentDetails?.status)}`,
                           backgroundColor: '#ffffff',
                           boxShadow: '0 4px 15px rgba(0, 0, 0, 0.03)'
                         }}
@@ -904,9 +971,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'flex-start', sm: 'flex-end' }, justifyContent: 'space-between', minWidth: '150px' }}>
                             <Box
                               sx={{
-                                backgroundColor: 'rgba(255, 215, 0, 0.12)',
-                                color: '#b8860b',
-                                border: '1px solid #FFD700',
+                                ...getStatusStyles(booking.paymentDetails?.status),
                                 borderRadius: '12px',
                                 px: 2,
                                 py: 0.4,
@@ -916,16 +981,54 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                                 textTransform: 'uppercase'
                               }}
                             >
-                              {booking.paymentDetails?.status || 'PAID'}
+                              {booking.paymentDetails?.status || 'paid'}
                             </Box>
-                            <Box sx={{ mt: { xs: 2, sm: 0 }, textAlign: { xs: 'left', sm: 'right' } }}>
+                            <Box sx={{ mt: { xs: 2, sm: 0 }, textAlign: { xs: 'left', sm: 'right' }, display: 'flex', flexDirection: 'column', alignItems: { xs: 'flex-start', sm: 'flex-end' } }}>
                               <Typography variant="caption" sx={{ color: '#666', display: 'block' }}>
-                                {/* Total Paid via Card (***{booking.paymentDetails?.cardNumberLast4}) */}
-                                Total Paid
+                                {booking.paymentDetails?.status === 'pending' ? 'Total Amount' : 'Total Paid'}
                               </Typography>
-                              <Typography variant="h5" sx={{ fontWeight: 700, color: '#990000' }}>
+                              <Typography variant="h5" sx={{ fontWeight: 700, color: '#990000', mb: 1 }}>
                                 PHP {booking.totalAmount.toLocaleString()}
                               </Typography>
+                              {booking.paymentDetails?.status === 'pending' && (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  disableElevation
+                                  sx={{
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '12px',
+                                    borderRadius: '6px',
+                                    backgroundColor: '#990000',
+                                    '&:hover': {
+                                      backgroundColor: '#d31027'
+                                    }
+                                  }}
+                                  onClick={() => {
+                                    const parsedCheckIn = booking.checkInDate ? booking.checkInDate.split('T')[0] : '';
+                                    const parsedCheckOut = booking.checkOutDate ? booking.checkOutDate.split('T')[0] : '';
+                                    
+                                    const bookingForPayment = {
+                                      _id: booking._id,
+                                      checkInDate: parsedCheckIn,
+                                      checkOutDate: parsedCheckOut,
+                                      checkInTime: booking.checkInTime,
+                                      hours: booking.hours,
+                                      notes: booking.notes,
+                                      totalAmount: booking.totalAmount,
+                                      selectedRoom: booking.roomType,
+                                      roomName: booking.room?.name,
+                                      roomImage: booking.room?.imageUrl
+                                    };
+                                    if (onReservationComplete) {
+                                      onReservationComplete(bookingForPayment);
+                                    }
+                                  }}
+                                >
+                                  Proceed to Payment
+                                </Button>
+                              )}
                             </Box>
                           </Box>
                         </Box>
