@@ -3,8 +3,6 @@
 
   # HOTEL OGOS
   ### "So Cozy... So Comfy!"
-  **Bayombong, Nueva Vizcaya**
-
   A premium hotel reservation system inspired by Japanese hospitality aesthetics, combining modern room booking services with analytical management dashboards.
 
   ---
