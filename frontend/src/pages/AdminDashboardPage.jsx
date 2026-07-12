@@ -532,6 +532,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null); 
 
+  const [openStatusConfirm, setOpenStatusConfirm] = useState(false);
+  const [statusConfirmTarget, setStatusConfirmTarget] = useState(null);
+
   
   const [alert, setAlert] = useState({
     open: false,
@@ -1472,7 +1475,15 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                       <IconButton
                                         size="small"
                                         color="success"
-                                        onClick={() => handleUpdateReservationStatus(res._id, 'paid')}
+                                        onClick={() => {
+                                          setStatusConfirmTarget({
+                                            id: res._id,
+                                            status: 'paid',
+                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Guest',
+                                            roomName: res.room?.name || res.roomType.replace('_', ' ')
+                                          });
+                                          setOpenStatusConfirm(true);
+                                        }}
                                       >
                                         <CheckCircleIcon fontSize="small" />
                                       </IconButton>
@@ -1483,7 +1494,15 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                       <IconButton
                                         size="small"
                                         color="primary"
-                                        onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
+                                        onClick={() => {
+                                          setStatusConfirmTarget({
+                                            id: res._id,
+                                            status: 'cancelled',
+                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Guest',
+                                            roomName: res.room?.name || res.roomType.replace('_', ' ')
+                                          });
+                                          setOpenStatusConfirm(true);
+                                        }}
                                       >
                                         <CancelIcon fontSize="small" />
                                       </IconButton>
@@ -1494,7 +1513,15 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                       <IconButton
                                         size="small"
                                         color="default"
-                                        onClick={() => handleUpdateReservationStatus(res._id, 'pending')}
+                                        onClick={() => {
+                                          setStatusConfirmTarget({
+                                            id: res._id,
+                                            status: 'pending',
+                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Guest',
+                                            roomName: res.room?.name || res.roomType.replace('_', ' ')
+                                          });
+                                          setOpenStatusConfirm(true);
+                                        }}
                                       >
                                         <CheckCircleIcon fontSize="small" sx={{ color: '#888' }} />
                                       </IconButton>
@@ -2183,6 +2210,47 @@ export default function AdminDashboardPage({ user, onLogout }) {
               sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
             >
               Yes, Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Status Change Confirmation Dialog */}
+        <Dialog
+          open={openStatusConfirm}
+          onClose={() => setOpenStatusConfirm(false)}
+          PaperProps={{ sx: { borderRadius: '12px' } }}
+        >
+          <DialogTitle className="ogos-dialog-title" style={{ color: statusConfirmTarget?.status === 'cancelled' ? '#d31027' : '#990000' }}>
+            Confirm Status Change
+          </DialogTitle>
+          <DialogContent sx={{ mt: 2 }}>
+            <DialogContentText sx={{ fontFamily: "'Poppins', sans-serif", color: '#1a1a1a' }}>
+              Are you sure you want to change the status of the reservation for <strong>{statusConfirmTarget?.guestName}</strong> ({statusConfirmTarget?.roomName}) to <strong style={{ textTransform: 'uppercase' }}>{statusConfirmTarget?.status}</strong>?
+              {statusConfirmTarget?.status === 'cancelled' && " This will cancel the booking and release the room for other guests."}
+              {statusConfirmTarget?.status === 'paid' && " This will mark the booking as paid and confirm the reservation."}
+              {statusConfirmTarget?.status === 'pending' && " This will set the booking back to pending status."}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className="ogos-dialog-actions">
+            <Button
+              onClick={() => setOpenStatusConfirm(false)}
+              sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600, color: '#666' }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (statusConfirmTarget) {
+                  await handleUpdateReservationStatus(statusConfirmTarget.id, statusConfirmTarget.status);
+                  setOpenStatusConfirm(false);
+                  setStatusConfirmTarget(null);
+                }
+              }}
+              variant="contained"
+              color={statusConfirmTarget?.status === 'cancelled' ? 'error' : 'primary'}
+              sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
+            >
+              Confirm
             </Button>
           </DialogActions>
         </Dialog>

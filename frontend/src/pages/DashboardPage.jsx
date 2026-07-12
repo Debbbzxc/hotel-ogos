@@ -15,7 +15,12 @@ import {
   Divider,
   InputAdornment,
   CircularProgress,
-  Checkbox
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -256,6 +261,14 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState(null);
+  const [cancelAlert, setCancelAlert] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   
   const getCalculatedCheckout = () => {
@@ -566,6 +579,48 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
 
   const handleCloseSnackbar = () => {
     setSuccess(false);
+  };
+
+  const handleCancelBooking = async () => {
+    if (!bookingToCancel) return;
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_URL}/api/reservations/${bookingToCancel._id}/cancel`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCancelAlert({
+          open: true,
+          message: 'Booking cancelled successfully.',
+          severity: 'success'
+        });
+        fetchMyBookings();
+      } else {
+        setCancelAlert({
+          open: true,
+          message: data.message || 'Failed to cancel booking.',
+          severity: 'error'
+        });
+      }
+    } catch (err) {
+      console.error('Error cancelling booking:', err);
+      setCancelAlert({
+        open: true,
+        message: 'Failed to reach server. Please try again.',
+        severity: 'error'
+      });
+    } finally {
+      setCancelDialogOpen(false);
+      setBookingToCancel(null);
+    }
+  };
+
+  const handleCloseCancelAlert = () => {
+    setCancelAlert(prev => ({ ...prev, open: false }));
   };
 
   return (
@@ -991,43 +1046,68 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                                 PHP {booking.totalAmount.toLocaleString()}
                               </Typography>
                               {booking.paymentDetails?.status === 'pending' && (
-                                <Button
-                                  variant="contained"
-                                  size="small"
-                                  disableElevation
-                                  sx={{
-                                    textTransform: 'none',
-                                    fontWeight: 600,
-                                    fontSize: '12px',
-                                    borderRadius: '6px',
-                                    backgroundColor: '#990000',
-                                    '&:hover': {
-                                      backgroundColor: '#d31027'
-                                    }
-                                  }}
-                                  onClick={() => {
-                                    const parsedCheckIn = booking.checkInDate ? booking.checkInDate.split('T')[0] : '';
-                                    const parsedCheckOut = booking.checkOutDate ? booking.checkOutDate.split('T')[0] : '';
-                                    
-                                    const bookingForPayment = {
-                                      _id: booking._id,
-                                      checkInDate: parsedCheckIn,
-                                      checkOutDate: parsedCheckOut,
-                                      checkInTime: booking.checkInTime,
-                                      hours: booking.hours,
-                                      notes: booking.notes,
-                                      totalAmount: booking.totalAmount,
-                                      selectedRoom: booking.roomType,
-                                      roomName: booking.room?.name,
-                                      roomImage: booking.room?.imageUrl
-                                    };
-                                    if (onReservationComplete) {
-                                      onReservationComplete(bookingForPayment);
-                                    }
-                                  }}
-                                >
-                                  Proceed to Payment
-                                </Button>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1, width: '100%' }}>
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    disableElevation
+                                    sx={{
+                                      textTransform: 'none',
+                                      fontWeight: 600,
+                                      fontSize: '12px',
+                                      borderRadius: '6px',
+                                      backgroundColor: '#990000',
+                                      '&:hover': {
+                                        backgroundColor: '#d31027'
+                                      }
+                                    }}
+                                    onClick={() => {
+                                      const parsedCheckIn = booking.checkInDate ? booking.checkInDate.split('T')[0] : '';
+                                      const parsedCheckOut = booking.checkOutDate ? booking.checkOutDate.split('T')[0] : '';
+                                      
+                                      const bookingForPayment = {
+                                        _id: booking._id,
+                                        checkInDate: parsedCheckIn,
+                                        checkOutDate: parsedCheckOut,
+                                        checkInTime: booking.checkInTime,
+                                        hours: booking.hours,
+                                        notes: booking.notes,
+                                        totalAmount: booking.totalAmount,
+                                        selectedRoom: booking.roomType,
+                                        roomName: booking.room?.name,
+                                        roomImage: booking.room?.imageUrl
+                                      };
+                                      if (onReservationComplete) {
+                                        onReservationComplete(bookingForPayment);
+                                      }
+                                    }}
+                                  >
+                                    Proceed to Payment
+                                  </Button>
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    color="error"
+                                    sx={{
+                                      textTransform: 'none',
+                                      fontWeight: 600,
+                                      fontSize: '12px',
+                                      borderRadius: '6px',
+                                      borderColor: '#d31027',
+                                      color: '#d31027',
+                                      '&:hover': {
+                                        borderColor: '#990000',
+                                        backgroundColor: 'rgba(211, 16, 39, 0.04)'
+                                      }
+                                    }}
+                                    onClick={() => {
+                                      setBookingToCancel(booking);
+                                      setCancelDialogOpen(true);
+                                    }}
+                                  >
+                                    Cancel Booking
+                                  </Button>
+                                </Box>
                               )}
                             </Box>
                           </Box>
@@ -1051,6 +1131,56 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
       >
         <Alert onClose={handleCloseSnackbar} severity="success" variant="filled" sx={{ width: '100%' }}>
           Reservation details saved! Proceeding to the next step...
+        </Alert>
+      </Snackbar>
+
+      {/* Cancel Reservation confirmation dialog */}
+      <Dialog
+        open={cancelDialogOpen}
+        onClose={() => setCancelDialogOpen(false)}
+        PaperProps={{ sx: { borderRadius: '12px' } }}
+      >
+        <DialogTitle className="ogos-dialog-title" style={{ color: '#d31027' }}>
+          Cancel Reservation
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText sx={{ fontFamily: "'Poppins', sans-serif", color: '#1a1a1a' }}>
+            Are you sure you want to cancel your reservation for <strong>{bookingToCancel?.room?.name || bookingToCancel?.roomType?.toUpperCase()}</strong>?
+            This will release the room block and cancel the reservation. This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions className="ogos-dialog-actions">
+          <Button
+            onClick={() => setCancelDialogOpen(false)}
+            sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600, color: '#666' }}
+          >
+            No, Keep Booking
+          </Button>
+          <Button
+            onClick={handleCancelBooking}
+            variant="contained"
+            color="error"
+            sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
+          >
+            Yes, Cancel Booking
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Cancel action alerts */}
+      <Snackbar
+        open={cancelAlert.open}
+        autoHideDuration={4000}
+        onClose={handleCloseCancelAlert}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleCloseCancelAlert}
+          severity={cancelAlert.severity}
+          variant="filled"
+          sx={{ width: '100%', fontFamily: "'Poppins', sans-serif", borderRadius: '8px' }}
+        >
+          {cancelAlert.message}
         </Alert>
       </Snackbar>
     </ThemeProvider>

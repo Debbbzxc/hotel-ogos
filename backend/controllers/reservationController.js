@@ -260,10 +260,43 @@ const payReservation = async (req, res) => {
   }
 };
 
+const cancelReservation = async (req, res) => {
+  try {
+    const reservation = await Reservation.findById(req.params.id);
+    if (!reservation) {
+      return res.status(404).json({ success: false, message: 'Reservation not found.' });
+    }
+
+    if (reservation.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not authorized to cancel this reservation.' });
+    }
+
+    if (reservation.paymentDetails.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Only pending reservations can be cancelled.' });
+    }
+
+    reservation.paymentDetails.status = 'cancelled';
+    await reservation.save();
+
+    // Notify admin system to refresh data
+    notifyAdmin();
+
+    return res.json({
+      success: true,
+      message: 'Reservation cancelled successfully.',
+      reservation
+    });
+  } catch (error) {
+    console.error('Cancel reservation error:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createReservation,
   getMyReservations,
   getAllReservations,
   updateReservationStatus,
-  payReservation
+  payReservation,
+  cancelReservation
 };
