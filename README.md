@@ -349,3 +349,7 @@ To ensure consistency in user interface extensions, always align elements with t
 - **Component Rules**:
   - Inputs must feature square icon prefixes back-colored in `#990000`.
   - Buttons must implement transform micro-animations on hover (`translateY(-1px)`) and active presses (`translateY(1px)`).
+
+---
+
+🎓 *SIA 2 Project*
