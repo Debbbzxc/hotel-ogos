@@ -1,5 +1,6 @@
 const Room = require('../models/Room');
 const Reservation = require('../models/Reservation');
+const notifyAdmin = require('../utils/notifyAdmin');
 
 
 function getNights(checkInStr, checkOutStr) {
@@ -222,6 +223,9 @@ const createRoom = async (req, res) => {
       imageUrl
     });
 
+    // Notify admin system to refresh data
+    notifyAdmin();
+
     return res.status(201).json({ success: true, room });
   } catch (error) {
     console.error('Create room error:', error.message);
@@ -301,6 +305,10 @@ const updateRoom = async (req, res) => {
     room.totalRooms = targetTotalRooms;
 
     await room.save();
+
+    // Notify admin system to refresh data
+    notifyAdmin();
+
     return res.json({ success: true, message: 'Room type updated successfully', room });
   } catch (error) {
     console.error('Update room error:', error.message);
@@ -329,6 +337,10 @@ const deleteRoom = async (req, res) => {
     }
 
     await Room.findOneAndDelete({ roomId: room.roomId });
+
+    // Notify admin system to refresh data
+    notifyAdmin();
+
     return res.json({ success: true, message: 'Room type deleted successfully' });
   } catch (error) {
     console.error('Delete room error:', error.message);

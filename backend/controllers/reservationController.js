@@ -1,7 +1,7 @@
 const Reservation = require('../models/Reservation');
 const Room = require('../models/Room');
 const { validateReservation } = require('../utils/validateReservation');
-
+const notifyAdmin = require('../utils/notifyAdmin');
 
 const { getNights } = require('./roomController');
 
@@ -142,6 +142,9 @@ const createReservation = async (req, res) => {
 
     const savedReservation = await reservation.save();
 
+    // Notify admin system to refresh data
+    notifyAdmin();
+
     return res.status(201).json({
       success: true,
       message: status === 'paid' ? 'Reservation created and paid successfully.' : 'Reservation created successfully (Pending payment).',
@@ -201,6 +204,9 @@ const updateReservationStatus = async (req, res) => {
     }
     await reservation.save();
 
+    // Notify admin system to refresh data
+    notifyAdmin();
+
     return res.json({
       success: true,
       message: `Reservation status updated to ${status} successfully.`,
@@ -239,6 +245,9 @@ const payReservation = async (req, res) => {
     reservation.paymentDetails.status = 'paid';
     reservation.paymentDetails.paidAt = new Date();
     await reservation.save();
+
+    // Notify admin system to refresh data
+    notifyAdmin();
 
     return res.json({
       success: true,
