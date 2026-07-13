@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const notifyAdmin = require('../utils/notifyAdmin');
 
 
 const generateToken = (id) => {
@@ -41,6 +42,9 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
+      // Notify admin system to refresh data
+      notifyAdmin();
+
       return res.status(201).json({
         success: true,
         token: generateToken(user._id),
@@ -148,6 +152,10 @@ const updateUserRole = async (req, res) => {
     }
     user.role = role;
     await user.save();
+
+    // Notify admin system to refresh data
+    notifyAdmin();
+
     return res.json({
       success: true,
       message: `User role updated to ${role} successfully.`,
@@ -197,6 +205,10 @@ const updateUserProfile = async (req, res) => {
     user.email = email.toLowerCase();
 
     await user.save();
+
+    // Notify admin system to refresh data
+    notifyAdmin();
+
     return res.json({
       success: true,
       message: 'User profile updated successfully.',
@@ -240,6 +252,10 @@ const deleteUser = async (req, res) => {
     }
 
     await User.findByIdAndDelete(user._id);
+
+    // Notify admin system to refresh data
+    notifyAdmin();
+
     return res.json({ success: true, message: 'User account deleted successfully.' });
   } catch (error) {
     console.error('Delete user error:', error.message);
