@@ -118,13 +118,9 @@ const externalReservation = async (req, res) => {
         .json({ success: false, message: "Missing required fields" });
     }
 
-    // Bugfix/Security Check: Verify userId format and presence
+    // Security Check: Verify userId format to prevent DB cast errors
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ success: false, message: "Invalid userId format" });
-    }
-    const userExists = await User.findById(userId);
-    if (!userExists) {
-      return res.status(404).json({ success: false, message: "User not found in Hotel database" });
     }
 
     const room = await Room.findOne({ roomId: selectedRoom });
