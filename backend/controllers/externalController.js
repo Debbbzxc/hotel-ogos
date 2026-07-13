@@ -8,7 +8,7 @@ const notifyAdmin = require('../utils/notifyAdmin');
 const getSummary = async (req, res) => {
   try {
     const totalReservations = await Reservation.countDocuments();
-    
+
     const roomsResult = await Room.aggregate([
       { $group: { _id: null, total: { $sum: '$totalRooms' } } }
     ]);
@@ -70,8 +70,8 @@ const getTransactions = async (req, res) => {
       createdAt: r.createdAt,
       type: 'reservation',
       amount: r.totalAmount,
-      guestName: r.user ? `${r.user.firstName} ${r.user.lastName}` : 'Unknown Guest',
-      guestEmail: r.user ? r.user.email : 'unknown@example.com',
+      guestName: r.user ? `${r.user.firstName} ${r.user.lastName}` : 'Bisita NV Guest',
+      guestEmail: r.user ? r.user.email : 'bisitanvguest@bisitanv.com',
       roomType: r.roomType,
       checkInDate: r.checkInDate,
       checkOutDate: r.checkOutDate,

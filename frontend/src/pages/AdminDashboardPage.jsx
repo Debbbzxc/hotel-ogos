@@ -1020,9 +1020,15 @@ export default function AdminDashboardPage({ user, onLogout }) {
   const getFilteredReservations = () => {
     return reservations.filter(res => {
       
-      const guestName = `${res.user?.firstName || ''} ${res.user?.lastName || ''}`.toLowerCase();
-      const guestEmail = (res.user?.email || '').toLowerCase();
-      const guestUsername = (res.user?.username || '').toLowerCase();
+      const userDetails = res.user || {
+        firstName: 'Bisita NV',
+        lastName: 'Guest',
+        email: 'bisitanvguest@bisitanv.com',
+        username: 'bisitanvguest'
+      };
+      const guestName = `${userDetails.firstName} ${userDetails.lastName}`.toLowerCase();
+      const guestEmail = userDetails.email.toLowerCase();
+      const guestUsername = userDetails.username.toLowerCase();
       const matchesSearch =
         guestName.includes(reservationsSearch.toLowerCase()) ||
         guestEmail.includes(reservationsSearch.toLowerCase()) ||
@@ -1305,7 +1311,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                           {reservations.slice(0, 5).map((res) => (
                             <TableRow key={res._id} className="ogos-table-row">
                               <TableCell sx={{ fontWeight: 500 }}>
-                                {res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Guest'}
+                                {res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Bisita NV Guest'}
                               </TableCell>
                               <TableCell sx={{ textTransform: 'capitalize' }}>
                                 <Typography sx={{ fontSize: '13.5px', fontWeight: 500 }}>
@@ -1415,7 +1421,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                       </TableHead>
                       <TableBody>
                         {filteredReservations.map((res) => {
-                          const userDetails = res.user || { firstName: 'Deleted', lastName: 'User', email: 'N/A', username: 'deleted' };
+                          const userDetails = res.user || { firstName: 'Bisita NV', lastName: 'Guest', email: 'bisitanvguest@bisitanv.com', username: 'bisitanvguest' };
                           return (
                             <TableRow key={res._id} className="ogos-table-row">
                               <TableCell>
@@ -1479,7 +1485,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                           setStatusConfirmTarget({
                                             id: res._id,
                                             status: 'paid',
-                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Guest',
+                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Bisita NV Guest',
                                             roomName: res.room?.name || res.roomType.replace('_', ' ')
                                           });
                                           setOpenStatusConfirm(true);
@@ -1498,7 +1504,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                           setStatusConfirmTarget({
                                             id: res._id,
                                             status: 'cancelled',
-                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Guest',
+                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Bisita NV Guest',
                                             roomName: res.room?.name || res.roomType.replace('_', ' ')
                                           });
                                           setOpenStatusConfirm(true);
@@ -1517,7 +1523,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                           setStatusConfirmTarget({
                                             id: res._id,
                                             status: 'pending',
-                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Guest',
+                                            guestName: res.user ? `${res.user.firstName} ${res.user.lastName}` : 'Bisita NV Guest',
                                             roomName: res.room?.name || res.roomType.replace('_', ' ')
                                           });
                                           setOpenStatusConfirm(true);
