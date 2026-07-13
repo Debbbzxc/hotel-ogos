@@ -35,6 +35,7 @@ import regencyImg from '../assets/regency.jpg';
 import regency2Img from '../assets/regency2.jpg';
 import megaSuiteImg from '../assets/mega_suite.jpg';
 import './DashboardPage.css';
+import BisitaNVBanner from '../components/BisitaNVBanner';
 
 const parseRoomNumber = (roomNumber) => {
   if (!roomNumber) return { floor: '', room: '' };
@@ -661,6 +662,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
         
         <main className="dashboard-main">
           <Box className="dashboard-content">
+            <BisitaNVBanner />
             
             <div className="welcome-banner">
               <Typography variant="h4" className="welcome-title">

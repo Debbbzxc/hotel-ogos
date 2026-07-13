@@ -1,0 +1,230 @@
+/* Bisita NV Promotion Banner Styles */
+
+.bisita-banner-expanded {
+  position: relative;
+  display: flex;
+  background: linear-gradient(135deg, #f4fbf7 0%, #ebf7ef 100%);
+  border: 1px solid #d2ecd9;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(4, 47, 26, 0.05);
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.bisita-accent-line {
+  width: 6px;
+  background-color: #052e16;
+  flex-shrink: 0;
+}
+
+.bisita-expanded-body {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bisita-main-info {
+  flex: 1;
+  padding-right: 24px;
+}
+
+.bisita-header-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.bisita-title {
+  font-size: 22px;
+  color: #052e16;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.bisita-description {
+  font-size: 13.5px;
+  color: #3f5546;
+  margin: 0; /* Removed bottom margin since pills are removed */
+  line-height: 1.5;
+}
+
+.bisita-action-column {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.bisita-cta-button {
+  display: inline-flex;
+  align-items: center;
+  background-color: #052e16;
+  color: #ffffff !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  box-shadow: 0 4px 10px rgba(5, 46, 22, 0.15);
+  cursor: pointer;
+}
+
+.bisita-cta-button:hover {
+  background-color: #12512f;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(5, 46, 22, 0.2);
+}
+
+.bisita-cta-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(5, 46, 22, 0.1);
+}
+
+/* Collapsed Banner Styles */
+.bisita-banner-collapsed {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #f4fbf7 0%, #ebf7ef 100%);
+  border: 1px solid #d2ecd9;
+  border-left: 4px solid #052e16;
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin-bottom: 24px;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 2px 8px rgba(4, 47, 26, 0.03);
+  box-sizing: border-box;
+}
+
+.bisita-collapsed-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #3f5546;
+}
+
+.bisita-brand-link {
+  color: #052e16;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px dashed #052e16;
+  padding-bottom: 1px;
+  transition: opacity 0.15s ease;
+}
+
+.bisita-brand-link:hover {
+  opacity: 0.8;
+}
+
+/* Control Buttons */
+.bisita-banner-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.absolute-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+
+.bisita-control-btn {
+  background: none;
+  border: none;
+  color: #5b7564;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bisita-control-btn:hover {
+  background-color: rgba(5, 46, 22, 0.06);
+  color: #052e16;
+}
+
+/* Animations */
+.animate-slide-down {
+  animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.bisita-icon-spin {
+  animation: iconBounce 3s infinite ease-in-out;
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(8deg);
+  }
+}
+
+/* Responsive Media Queries */
+@media (max-width: 768px) {
+  .bisita-expanded-body {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 20px;
+    gap: 20px;
+  }
+
+  .bisita-main-info {
+    padding-right: 0;
+  }
+
+  .bisita-action-column {
+    width: 100%;
+  }
+
+  .bisita-cta-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .absolute-controls {
+    top: 8px;
+    right: 8px;
+  }
+}
