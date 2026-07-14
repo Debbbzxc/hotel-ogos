@@ -654,6 +654,25 @@
   object-fit: cover;
 }
 
+.upload-preview-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+.upload-preview-wrapper:hover .upload-preview-overlay {
+  opacity: 1;
+}
+
 .remove-upload-btn {
   position: absolute;
   top: 8px;

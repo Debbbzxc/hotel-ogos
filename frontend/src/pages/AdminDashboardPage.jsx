@@ -518,6 +518,9 @@ export default function AdminDashboardPage({ user, onLogout }) {
     roomNumbers: ''
   });
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+
   
   const [openUserModal, setOpenUserModal] = useState(false);
   const [userFormData, setUserFormData] = useState({
@@ -637,6 +640,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
       imageUrl: '',
       roomNumbers: ''
     });
+    setImageFile(null);
+    setImagePreview('');
     setOpenRoomModal(true);
   };
 
@@ -652,6 +657,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
       imageUrl: room.imageUrl || '',
       roomNumbers: room.roomNumbers ? room.roomNumbers.join(', ') : ''
     });
+    setImageFile(null);
+    setImagePreview(room.imageUrl || '');
     setOpenRoomModal(true);
   };
 
@@ -662,15 +669,18 @@ export default function AdminDashboardPage({ user, onLogout }) {
         triggerAlert('Image size should be less than 2MB.', 'error');
         return;
       }
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setRoomFormData(prev => ({ ...prev, imageUrl: reader.result }));
+        setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview('');
     setRoomFormData(prev => ({ ...prev, imageUrl: '' }));
   };
 
@@ -684,6 +694,41 @@ export default function AdminDashboardPage({ user, onLogout }) {
       return;
     }
 
+    let finalImageUrl = imageUrl;
+
+    if (imageFile) {
+      try {
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+        if (!cloudName || !uploadPreset) {
+          triggerAlert('Cloudinary environment variables VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET are not configured.', 'error');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        formData.append('upload_preset', uploadPreset);
+
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json();
+          throw new Error(errData.error?.message || 'Upload failed.');
+        }
+
+        const uploadData = await uploadRes.json();
+        finalImageUrl = uploadData.secure_url;
+      } catch (uploadError) {
+        console.error('Cloudinary upload error:', uploadError);
+        triggerAlert(`Failed to upload image: ${uploadError.message}`, 'error');
+        return;
+      }
+    }
+
     const payload = {
       roomId: roomId.toLowerCase(),
       name,
@@ -691,7 +736,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
       baseRate24: Number(baseRate24),
       totalRooms: Number(totalRooms),
       description,
-      imageUrl,
+      imageUrl: finalImageUrl,
       roomNumbers: roomNumbers ? roomNumbers.split(',').map(n => n.trim()).filter(Boolean) : []
     };
 
@@ -2063,13 +2108,31 @@ export default function AdminDashboardPage({ user, onLogout }) {
               <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#333' }}>
                 Room Cover Graphic
               </Typography>
-              {roomFormData.imageUrl ? (
-                <div className="upload-preview-wrapper">
-                  <img src={roomFormData.imageUrl} alt="Room Upload Preview" className="upload-preview-img" />
+              {imagePreview ? (
+                <div className="upload-preview-wrapper" style={{ position: 'relative' }}>
+                  <label style={{ cursor: 'pointer', display: 'block', width: '100%', height: '100%' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handleImageUpload}
+                    />
+                    <img src={imagePreview} alt="Room Upload Preview" className="upload-preview-img" />
+                    <div className="upload-preview-overlay">
+                      <Typography sx={{ color: '#fff', fontSize: '13px', fontWeight: 600 }}>
+                        Click Image to Change
+                      </Typography>
+                    </div>
+                  </label>
                   <IconButton
                     size="small"
                     className="remove-upload-btn"
-                    onClick={handleRemoveImage}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleRemoveImage();
+                    }}
+                    style={{ position: 'absolute', zIndex: 10 }}
                   >
                     <CancelIcon fontSize="small" />
                   </IconButton>
@@ -2088,7 +2151,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                       Click to Upload Image File
                     </Typography>
                     <Typography sx={{ fontSize: '11px', color: '#666', mt: 0.5 }}>
-                      PNG, JPG, JPEG up to 2MB (Converted to Base64)
+                      PNG, JPG, JPEG up to 2MB (Uploaded to Cloudinary)
                     </Typography>
                   </div>
                 </label>
