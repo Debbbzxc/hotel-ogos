@@ -101,7 +101,10 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
   const formatDateTime = (dateStr, timeStr) => {
     if (!dateStr || !timeStr) return '';
     try {
-      const [year, month, day] = dateStr.split('-').map(Number);
+      // Clean ISO date strings by extracting only the date component (YYYY-MM-DD)
+      const cleanDateStr = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+      
+      const [year, month, day] = cleanDateStr.split('-').map(Number);
       const [hour, minute] = timeStr.split(':').map(Number);
       const dateObj = new Date(year, month - 1, day, hour, minute, 0);
 
