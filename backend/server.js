@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 const externalRoutes = require('./routes/externalRoutes');
+const utilityRoutes = require('./routes/utilityRoutes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/external', externalRoutes);
+app.use('/api/utility-bills', utilityRoutes);
 
 
 

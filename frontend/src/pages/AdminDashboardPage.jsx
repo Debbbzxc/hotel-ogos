@@ -47,6 +47,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import WaterDropIcon from '@mui/icons-material/WaterDrop';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -268,6 +270,16 @@ export default function AdminDashboardPage({ user, onLogout }) {
   
   const [loadingData, setLoadingData] = useState(true);
 
+  // Utility Bills State
+  const [utilityCustomer, setUtilityCustomer] = useState(null);
+  const [utilityBills, setUtilityBills] = useState([]);
+  const [loadingUtility, setLoadingUtility] = useState(false);
+  const [billFilter, setBillFilter] = useState('All');
+  const [payModalOpen, setPayModalOpen] = useState(false);
+  const [selectedBill, setSelectedBill] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+
   const [reportSummary, setReportSummary] = useState(null);
   const [reportTransactions, setReportTransactions] = useState([]);
   const [loadingReport, setLoadingReport] = useState(false);
@@ -301,6 +313,101 @@ export default function AdminDashboardPage({ user, onLogout }) {
       triggerAlert('Failed to fetch summary report data.', 'error');
     } finally {
       setLoadingReport(false);
+    }
+  };
+
+  const fetchUtilityData = async () => {
+    setLoadingUtility(true);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      onLogout();
+      return;
+    }
+    try {
+      const resCustomer = await fetch(`${API_URL}/api/utility-bills/customer`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const dataCustomer = await resCustomer.json();
+
+      const resBills = await fetch(`${API_URL}/api/utility-bills/bills`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const dataBills = await resBills.json();
+
+      if (dataCustomer.success) {
+        setUtilityCustomer(dataCustomer.data);
+      } else {
+        console.error('Failed to fetch utility customer:', dataCustomer.message);
+      }
+
+      if (dataBills.success) {
+        setUtilityBills(dataBills.data);
+      } else {
+        console.error('Failed to fetch utility bills:', dataBills.message);
+      }
+    } catch (error) {
+      console.error('Error fetching utility billing data:', error);
+      triggerAlert('Failed to fetch utility billing details from Aquabill.', 'error');
+    } finally {
+      setLoadingUtility(false);
+    }
+  };
+
+  const handleOpenPayModal = (bill) => {
+    setSelectedBill(bill);
+    setPaymentAmount(bill.balance);
+    setPayModalOpen(true);
+  };
+
+  const handleClosePayModal = () => {
+    setPayModalOpen(false);
+    setSelectedBill(null);
+    setPaymentAmount('');
+  };
+
+  const handlePayBillSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedBill) return;
+
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      triggerAlert('Please enter a valid payment amount.', 'warning');
+      return;
+    }
+
+    if (amount > selectedBill.balance) {
+      triggerAlert(`Payment amount cannot exceed the bill's remaining balance of ₱${selectedBill.balance}.`, 'warning');
+      return;
+    }
+
+    setIsSubmittingPayment(true);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_URL}/api/utility-bills/pay`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          billId: selectedBill._id,
+          amountPaid: amount
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        triggerAlert('Payment recorded successfully in Aquabill!', 'success');
+        handleClosePayModal();
+        await fetchUtilityData();
+      } else {
+        triggerAlert(data.message || 'Failed to record payment.', 'error');
+      }
+    } catch (error) {
+      console.error('Error posting utility payment:', error);
+      triggerAlert('An error occurred while communicating with the server.', 'error');
+    } finally {
+      setIsSubmittingPayment(false);
     }
   };
 
@@ -610,6 +717,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
   useEffect(() => {
     if (activeTab === 'summaryReport') {
       fetchReportData();
+    } else if (activeTab === 'utilityBills') {
+      fetchUtilityData();
     }
   }, [activeTab]);
 
@@ -1159,6 +1268,13 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 <AssessmentIcon fontSize="small" />
                 <span>Summary Report</span>
               </div>
+              <div
+                className={`admin-menu-item ${activeTab === 'utilityBills' ? 'active' : ''}`}
+                onClick={() => setActiveTab('utilityBills')}
+              >
+                <WaterDropIcon fontSize="small" />
+                <span>Utility Bills</span>
+              </div>
             </div>
           </div>
 
@@ -1190,6 +1306,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 {activeTab === 'rooms' && 'Room Inventory & Pricing'}
                 {activeTab === 'guests' && 'Registered Guests Directory'}
                 {activeTab === 'summaryReport' && 'Summary & Transaction Report'}
+                {activeTab === 'utilityBills' && 'Water Utility Bills Manager'}
               </h2>
               <p className="admin-header-subtitle">
                 {activeTab === 'overview' && 'Real-time performance metrics and booking stats.'}
@@ -1197,6 +1314,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 {activeTab === 'rooms' && 'Configure room specifications, rates, and upload graphics.'}
                 {activeTab === 'guests' && 'Edit user profiles, adjust access levels, or delete accounts.'}
                 {activeTab === 'summaryReport' && 'Comprehensive summaries and recent system transactions.'}
+                {activeTab === 'utilityBills' && 'Track water usage, view billing history, and pay water bills directly to the Aquabill System.'}
               </p>
             </div>
             <div className="admin-badge" style={{ margin: 0, padding: '6px 14px', fontSize: '11px', color: '#1a1a1a', backgroundColor: '#ffd700' }}>
@@ -2008,6 +2126,148 @@ export default function AdminDashboardPage({ user, onLogout }) {
                   )}
                 </div>
               )}
+
+              {activeTab === 'utilityBills' && (
+                <div className="report-tab-container">
+                  {loadingUtility ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40vh' }}>
+                      <CircularProgress sx={{ color: '#990000' }} />
+                    </Box>
+                  ) : (
+                    <>
+                      {/* Customer Details Overview Card */}
+                      {utilityCustomer && (
+                        <div className="utility-customer-card">
+                          <div style={{ flex: '1 1 200px' }}>
+                            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#888', fontWeight: 600, letterSpacing: '0.5px' }}>Billing Account</span>
+                            <h3 style={{ margin: '4px 0', fontSize: '20px', color: '#1a1a1a', fontWeight: 700 }}>{utilityCustomer.accountNumber}</h3>
+                            <span className={`status-badge ${utilityCustomer.status?.toLowerCase() === 'active' ? 'paid' : 'cancelled'}`} style={{ display: 'inline-block', marginTop: '6px' }}>
+                              {utilityCustomer.status}
+                            </span>
+                          </div>
+                          
+                          <div style={{ flex: '1 1 200px' }}>
+                            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#888', fontWeight: 600, letterSpacing: '0.5px' }}>Meter Number</span>
+                            <h4 style={{ margin: '4px 0 0 0', fontSize: '15px', color: '#333', fontWeight: 600 }}>{utilityCustomer.meterNumber}</h4>
+                            <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: '#666' }}>{utilityCustomer.connectionType} Connection</p>
+                          </div>
+
+                          <div style={{ flex: '1 1 200px' }}>
+                            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#888', fontWeight: 600, letterSpacing: '0.5px' }}>Billing Address</span>
+                            <h4 style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#333', fontWeight: 500 }}>{utilityCustomer.address}</h4>
+                            <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#666' }}>Barangay: {utilityCustomer.barangay}</p>
+                          </div>
+
+                          <div style={{ flex: '1 1 200px', textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#888', fontWeight: 600, letterSpacing: '0.5px' }}>Outstanding Balance</span>
+                            <h2 style={{ margin: '4px 0 0 0', fontSize: '28px', color: utilityCustomer.outstandingBalance > 0 ? '#990000' : '#2e7d32', fontWeight: 800 }}>
+                              ₱{utilityCustomer.outstandingBalance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </h2>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bills Ledger */}
+                      <div className="admin-card">
+                        <div className="admin-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                          <h4 className="admin-card-title" style={{ margin: 0 }}>Water Consumption & Billing Ledger</h4>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            {['All', 'Unpaid', 'Partial', 'Paid'].map((f) => (
+                              <button
+                                key={f}
+                                className={`filter-btn-status ${billFilter === f ? 'active' : ''}`}
+                                onClick={() => setBillFilter(f)}
+                              >
+                                {f}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e4e7', borderRadius: '8px', mt: 2 }}>
+                          <Table size="medium">
+                            <TableHead>
+                              <TableRow>
+                                <TableCell className="ogos-table-header">Bill Number</TableCell>
+                                <TableCell className="ogos-table-header">Billing Period</TableCell>
+                                <TableCell className="ogos-table-header">Consumption</TableCell>
+                                <TableCell className="ogos-table-header">Total Amount</TableCell>
+                                <TableCell className="ogos-table-header">Amount Paid</TableCell>
+                                <TableCell className="ogos-table-header">Remaining Balance</TableCell>
+                                <TableCell className="ogos-table-header" align="center">Status</TableCell>
+                                <TableCell className="ogos-table-header" align="center">Action</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {utilityBills
+                                .filter(bill => billFilter === 'All' || bill.status === billFilter)
+                                .map((bill) => {
+                                  const billingPeriodMonth = new Date(0, bill.billingPeriod.month - 1).toLocaleString('default', { month: 'long' });
+                                  return (
+                                    <TableRow key={bill._id} className="ogos-table-row">
+                                      <TableCell sx={{ fontWeight: 600, color: '#1a1a1a' }}>
+                                        {bill.billNumber}
+                                      </TableCell>
+                                      <TableCell sx={{ fontWeight: 500 }}>
+                                        {billingPeriodMonth} {bill.billingPeriod.year}
+                                      </TableCell>
+                                      <TableCell>
+                                        {bill.consumption} m³
+                                      </TableCell>
+                                      <TableCell sx={{ fontWeight: 500 }}>
+                                        ₱{bill.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                      </TableCell>
+                                      <TableCell sx={{ color: '#2e7d32' }}>
+                                        ₱{bill.amountPaid?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                      </TableCell>
+                                      <TableCell sx={{ fontWeight: 600, color: bill.balance > 0 ? '#990000' : '#2e7d32' }}>
+                                        ₱{bill.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        <span className={`status-badge ${bill.status?.toLowerCase() === 'paid' ? 'paid' : bill.status?.toLowerCase() === 'partial' ? 'pending' : 'cancelled'}`}>
+                                          {bill.status}
+                                        </span>
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        {bill.status !== 'Paid' ? (
+                                          <Button
+                                            variant="contained"
+                                            size="small"
+                                            onClick={() => handleOpenPayModal(bill)}
+                                            startIcon={<AccountBalanceWalletIcon />}
+                                            sx={{
+                                              textTransform: 'none',
+                                              fontFamily: "'Poppins', sans-serif",
+                                              fontSize: '11px',
+                                              fontWeight: 600,
+                                              backgroundColor: '#990000',
+                                              '&:hover': { backgroundColor: '#730000' }
+                                            }}
+                                          >
+                                            Pay Bill
+                                          </Button>
+                                        ) : (
+                                          <span style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>Settled</span>
+                                        )}
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              {utilityBills.filter(bill => billFilter === 'All' || bill.status === billFilter).length === 0 && (
+                                <TableRow>
+                                  <TableCell colSpan={8} align="center" sx={{ py: 6, color: '#666', fontStyle: 'italic' }}>
+                                    No bills found matching the status filter.
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -2323,8 +2583,78 @@ export default function AdminDashboardPage({ user, onLogout }) {
             </Button>
           </DialogActions>
         </Dialog>
+        {/* Utility Bill Payment Dialog */}
+        <Dialog
+          open={payModalOpen}
+          onClose={handleClosePayModal}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: '12px' } }}
+        >
+          <form onSubmit={handlePayBillSubmit}>
+            <DialogTitle className="ogos-dialog-title">
+              Record Water Bill Payment
+            </DialogTitle>
+            <DialogContent sx={{ mt: 2, pt: 1 }}>
+              {selectedBill && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Typography variant="body2" sx={{ fontFamily: "'Poppins', sans-serif", color: '#666' }}>
+                    Posting payment for Bill Number: <strong>{selectedBill.billNumber}</strong> (Period: {new Date(0, selectedBill.billingPeriod.month - 1).toLocaleString('default', { month: 'long' })} {selectedBill.billingPeriod.year})
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: '#f6f5f8', p: 2, borderRadius: '8px' }}>
+                    <div>
+                      <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Total Charge</Typography>
+                      <Typography sx={{ fontWeight: 600, color: '#1a1a1a' }}>₱{selectedBill.totalAmount?.toLocaleString()}</Typography>
+                    </div>
+                    <div>
+                      <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Remaining Balance</Typography>
+                      <Typography sx={{ fontWeight: 700, color: '#990000' }}>₱{selectedBill.balance?.toLocaleString()}</Typography>
+                    </div>
+                  </Box>
+                  <FormField
+                    label="Payment Amount (₱)"
+                    type="number"
+                    variant="outlined"
+                    fullWidth
+                    required
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    inputProps={{ step: '0.01', min: '0.01', max: selectedBill.balance }}
+                    sx={{
+                      '& label.Mui-focused': { color: '#990000' },
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': { borderColor: '#990000' }
+                      }
+                    }}
+                  />
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions className="ogos-dialog-actions">
+              <Button
+                onClick={handleClosePayModal}
+                sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontWeight: 600, color: '#666' }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isSubmittingPayment}
+                sx={{
+                  textTransform: 'none',
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 600,
+                  backgroundColor: '#990000',
+                  '&:hover': { backgroundColor: '#730000' }
+                }}
+              >
+                {isSubmittingPayment ? 'Processing...' : 'Confirm Payment'}
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
 
-        
         <Snackbar
           open={alert.open}
           autoHideDuration={4000}

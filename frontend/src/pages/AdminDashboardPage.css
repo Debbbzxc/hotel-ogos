@@ -797,3 +797,42 @@
     transform: translateY(0);
   }
 }
+
+/* Utility Bills Dashboard Styles */
+.utility-customer-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 24px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e4e7;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.utility-customer-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.filter-btn-status {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e4e7;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-btn-status:hover {
+  background-color: #f1eded;
+}
+
+.filter-btn-status.active {
+  background-color: #990000 !important;
+  color: #ffffff !important;
+  border-color: #990000;
+}
