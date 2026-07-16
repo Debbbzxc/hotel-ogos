@@ -26,6 +26,8 @@
 
 Hotel Ogos is a full-stack reservation platform that provides guests with a seamless way to check room availability, select standard durations (12-hour or 24-hour configurations), book stays, and generate transaction invoices. The application is styled according to the Hotel Ogos brand guidelines, using a custom red, white, and gold visual identity to create a warm, premium experience.
 
+As part of a larger smart city and tourism network, Hotel Ogos is integrated with key external platforms—specifically the **Bisita NV** tourism portal for synchronized guest bookings and package referrals, and the **AquaBill System** for automated water utility monitoring and payments.
+
 It contains:
 - **A Frontend Web Application** built with React, Vite, and Material UI, featuring a dual customer/admin workspace, responsive layout architectures, and dynamically compiled PDF invoice generation.
 - **A Backend API Service** powered by Node.js, Express, and MongoDB (via Mongoose), handling session authentication, booking validations, role authorizations, and analytical computations.
@@ -44,12 +46,24 @@ It contains:
 ### Administration & Analytics Dashboard
 - **Key Metrics Tracking**: Real-time display of total system revenue, aggregate guest profiles, active occupancy percentages, and booking distributions.
 - **Analytics Visualizations**: Custom graphical breakdown of top-performing room types and occupancy trends.
-- **Room Management**: Access to add, update, or remove room configurations, amenities, descriptions, and baseline fees.
+- **Room Management**: Access to add, update, or remove room configurations, amenities, descriptions, and baseline fees, with room images uploaded to Cloudinary.
 - **Reservation & User Controls**: Interfaces to view transaction logs, update payment states (paid, pending, cancelled), adjust user permissions, or delete profiles.
+- **Utility Bill Management**: Integration with the Aquabill System to track, monitor, and pay water utility bills directly from the dashboard.
 
 ### Integration Layer (External API)
 - **Protected Integrations**: Separate endpoints isolated by API key security.
 - **Sync Endpoints**: Methods to query reservation listings, record external bookings, cancel holds, and check analytical status.
+
+### Ecosystem Integrations
+- **Bisita NV (Nueva Vizcaya Tourism Management System)**:
+  - **Referral Banner**: An interactive promotional banner displayed in the guest dashboard to connect users with tourism packages and destinations.
+  - **Reservation Sync**: Secure back-end integrations that automatically record external bookings under specific "Bisita NV Guest" accounts when bookings are made via the integration layer.
+- **AquaBill System (Water Utility System)**:
+  - **Billing Dashboard**: A dedicated panel in the administration dashboard allowing admins to view customer details and utility bills.
+  - **Direct Settlement**: The backend proxies payment requests directly to the AquaBill System to record and process water utility bill payments from Hotel Ogos.
+- **Unified Admin Portal (External Admin System)**:
+  - **Shared Analytics & Transactions**: Integrates with Hotel Ogos via the external API key layer to fetch real-time booking summaries (`/api/external/summary`) and historical transaction logs (`/api/external/transactions`).
+  - **Real-time Synchronization**: Responds to background webhook notifications (`ADMIN_URL`) sent from the Hotel Ogos backend, utilizing WebSocket channels to broadcast real-time metrics and chart updates across the administrative platform.
 
 ---
 
@@ -80,7 +94,7 @@ It contains:
 │   ├── package.json        # Frontend configuration & dependencies
 │   └── vite.config.js      # Vite build properties
 │
-└── style_guide.md          # Official Brand UI/UX Style Guidelines
+└── STYLEGUIDE.md          # Official Brand UI/UX Style Guidelines
 ```
 
 ---
@@ -127,14 +141,25 @@ cd hotel-ogos
    ```bash
    cp .env.example .env
    ```
-4. Update the variables in `.env` to match your local/production settings:
+4. Update the variables in `.env` to match your local/production settings (including Aquabill settings if integration is enabled):
    ```env
    PORT=5000
    MONGODB_URI=mongodb://localhost:27017/hotel_ogos
    JWT_SECRET=your_jwt_signing_key_here
    INTERNAL_API_KEY=your_secure_api_key_here
    ADMIN_URL=http://localhost:5173
+   AQUABILL_URL=https://fork-aquabill-system-backend.onrender.com
+   AQUABILL_API_KEY=apikey1234
    ```
+
+   *Variable Descriptions:*
+   - **`PORT`**: The local port the Express server listens to (typically `5000`).
+   - **`MONGODB_URI`**: Connection string to your local or hosted MongoDB instance.
+   - **`JWT_SECRET`**: Custom cryptographic secret key used for JWT session token validation.
+   - **`INTERNAL_API_KEY`**: Security key used to authenticate external integrations (like Bisita NV).
+   - **`ADMIN_URL`**: URL pointing to the Admin Dashboard (used for real-time webhook update notifications).
+   - **`AQUABILL_URL` & `AQUABILL_API_KEY`**: Connection endpoint and authentication key for proxying utility bill actions.
+
 5. Seed the database with initial rooms and default users:
    ```bash
    npm run seed
@@ -157,10 +182,18 @@ cd hotel-ogos
    ```bash
    npm install
    ```
-3. If connecting to a remote backend server, create a `.env` file in the frontend root and specify:
+3. Create a `.env` file in the frontend root (see `.env.example` as reference) and configure the backend URL and Cloudinary settings (required for uploading room images in the dashboard):
    ```env
    VITE_API_URL=http://localhost:5000
+   VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+   VITE_CLOUDINARY_UPLOAD_PRESET=your_unsigned_upload_preset
    ```
+
+   *Variable Descriptions:*
+   - **`VITE_API_URL`**: The base URL of the backend API server.
+   - **`VITE_CLOUDINARY_CLOUD_NAME`**: Cloudinary Cloud Name identifier used to upload room media assets.
+   - **`VITE_CLOUDINARY_UPLOAD_PRESET`**: Configured unsigned preset name in your Cloudinary account.
+
 4. Start the frontend development server:
    ```bash
    npm run dev
@@ -338,7 +371,7 @@ Cancels a reservation and frees up the occupied room numbers.
 
 ## Brand Design Tokens
 
-To ensure consistency in user interface extensions, always align elements with the specifications defined in [style_guide.md](file:///c:/Users/Deb/Desktop/PROJECTS/Hotel%20Ogos/style_guide.md):
+To ensure consistency in user interface extensions, always align elements with the specifications defined in the style guide.
 
 - **Typography**: Poppins from Google Fonts (`'Poppins', sans-serif`).
 - **Brand Colors**:
