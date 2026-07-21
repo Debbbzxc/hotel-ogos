@@ -172,6 +172,21 @@ export default function LoginPage({ onNavigate, onLoginSuccess }) {
             
             <div className="form-content-wrapper">
               
+              {/* Compact Mobile Brand Header */}
+              <div className="mobile-brand-header">
+                <div className="mobile-logo-wrapper">
+                  <img src={logoImg} className="mobile-hotel-logo" alt="Hotel Ogos Logo" />
+                </div>
+                <div className="mobile-brand-text">
+                  <Typography className="mobile-hotel-title">
+                    HOTEL OGOS
+                  </Typography>
+                  <Typography className="mobile-branch-location">
+                    Bayombong, Nueva Vizcaya
+                  </Typography>
+                </div>
+              </div>
+
               <div className="login-intro">
                 <Typography variant="h5" component="h1" className="login-title">
                   Login

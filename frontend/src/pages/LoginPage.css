@@ -201,33 +201,95 @@
 }
 
 
-@media (max-width: 868px) {
+/* Compact Mobile Header Styles */
+.mobile-brand-header {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .login-viewport {
+    overflow-y: auto;
+  }
+
   .login-card {
     flex-direction: column;
+    height: 100%;
   }
 
   .brand-panel {
-    width: 100%;
-    height: 40%;
-    padding: 30px 20px;
-    border-bottom: 4px solid #FFD700;
+    display: none !important;
   }
 
   .form-panel {
     width: 100%;
-    height: 60%;
-    padding: 30px 20px;
+    height: 100%;
+    padding: 32px 20px;
+    justify-content: center;
   }
 
-  .hotel-title {
-    font-size: 36px !important;
+  .mobile-brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #E5E4E7;
+    padding-bottom: 16px;
   }
 
-  .tagline {
-    font-size: 16px !important;
+  .mobile-logo-wrapper {
+    width: 48px;
+    height: 48px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2.5px solid #FFD700;
+  }
+
+  .mobile-hotel-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mobile-brand-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-hotel-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 20px !important;
+    color: #990000 !important;
+    margin: 0 !important;
+    letter-spacing: 0.5px !important;
+    line-height: 1.1 !important;
+  }
+
+  .mobile-branch-location {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    color: #B8860B !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase;
+    margin-top: 2px !important;
+  }
+
+  .login-intro {
+    margin-bottom: 20px;
   }
 
   .login-title {
-    font-size: 26px !important;
+    font-size: 24px !important;
+  }
+
+  .login-subtitle {
+    font-size: 13.5px !important;
   }
 }

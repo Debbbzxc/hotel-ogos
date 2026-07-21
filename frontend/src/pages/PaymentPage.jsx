@@ -148,6 +148,7 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   if (!reservation) return null;
 
@@ -325,9 +326,16 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
               </Typography>
             </div>
 
+            {/* Mobile Summary Accordion Trigger */}
+            <div className="mobile-summary-trigger" onClick={() => setSummaryOpen(!summaryOpen)}>
+              <div className="mobile-summary-trigger-label">
+                {summaryOpen ? 'Hide Booking Details ▲' : 'Show Booking Details (PHP ' + totalAmount.toLocaleString() + ') ▼'}
+              </div>
+            </div>
+
             <Box className="payment-stack-container">
               
-              <Paper className="payment-summary-card" elevation={2}>
+              <Paper className={`payment-summary-card ${summaryOpen ? 'expanded' : ''}`} elevation={2}>
                 <Typography variant="h6" className="summary-header">
                   Booking Summary
                 </Typography>
@@ -396,6 +404,37 @@ export default function PaymentPage({ user, reservation, onLogout, onBackToDashb
                   Card Payment Details
                 </Typography>
                 <Divider className="payment-section-divider" />
+
+                {/* Interactive Virtual Credit Card */}
+                <div className="virtual-card-wrapper">
+                  <div className="virtual-card">
+                    <div className="virtual-card-front">
+                      <div className="virtual-card-top">
+                        <div className="virtual-card-chip"></div>
+                        <Typography className="virtual-card-logo">CARD</Typography>
+                      </div>
+                      <div className="virtual-card-number-row">
+                        {cardNumber || '•••• •••• •••• ••••'}
+                      </div>
+                      <div className="virtual-card-footer">
+                        <div className="virtual-card-holder">
+                          <span className="card-label">Card Holder</span>
+                          <span className="card-value">{cardName.toUpperCase() || 'JUAN DELA CRUZ'}</span>
+                        </div>
+                        <div className="virtual-card-expires">
+                          <span className="card-label">Expires</span>
+                          <span className="card-value">{cardExpiry || 'MM/YY'}</span>
+                        </div>
+                        {cardCvv && (
+                          <div className="virtual-card-cvv">
+                            <span className="card-label">CVV</span>
+                            <span className="card-value">***</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 
                 <form onSubmit={handleConfirmPayment} className="payment-input-form">

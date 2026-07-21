@@ -208,6 +208,21 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
             
             <div className="form-content-wrapper">
               
+              {/* Compact Mobile Brand Header */}
+              <div className="mobile-brand-header">
+                <div className="mobile-logo-wrapper">
+                  <img src={logoImg} className="mobile-hotel-logo" alt="Hotel Ogos Logo" />
+                </div>
+                <div className="mobile-brand-text">
+                  <Typography className="mobile-hotel-title">
+                    HOTEL OGOS
+                  </Typography>
+                  <Typography className="mobile-branch-location">
+                    Bayombong, Nueva Vizcaya
+                  </Typography>
+                </div>
+              </div>
+
               <div className="register-intro">
                 <Typography variant="h5" component="h1" className="register-title">
                   Register
@@ -220,38 +235,39 @@ export default function RegisterPage({ onNavigate, onRegisterSuccess }) {
               
               <form onSubmit={handleRegister} className="register-form">
                 
-                <StyledTextField
-                  placeholder="First Name"
-                  variant="outlined"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconWrapper>
-                          <PersonIcon fontSize="small" />
-                        </IconWrapper>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                <div className="register-row-grid">
+                  <StyledTextField
+                    placeholder="First Name"
+                    variant="outlined"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <IconWrapper>
+                            <PersonIcon fontSize="small" />
+                          </IconWrapper>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
 
-                
-                <StyledTextField
-                  placeholder="Last Name"
-                  variant="outlined"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconWrapper>
-                          <PersonIcon fontSize="small" />
-                        </IconWrapper>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                  <StyledTextField
+                    placeholder="Last Name"
+                    variant="outlined"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <IconWrapper>
+                            <PersonIcon fontSize="small" />
+                          </IconWrapper>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </div>
 
                 
                 <StyledTextField

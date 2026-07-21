@@ -27,6 +27,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import NoteIcon from '@mui/icons-material/Note';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import logoImg from '../assets/logo.png';
 import roomPlaceholder from '../assets/room_placeholder.png';
 import premiumImg from '../assets/premium.jpg';
@@ -674,7 +675,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
             </div>
 
             
-            <Box sx={{ display: 'flex', mb: 3.5 }}>
+            <Box className="tabs-desktop-container" sx={{ display: 'flex', mb: 3.5 }}>
               <TabButton active={activeTab === 'book'} onClick={() => setActiveTab('book')}>
                 New Reservation
               </TabButton>
@@ -697,7 +698,7 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                 </Typography>
                 <Divider className="form-divider" />
 
-                <form onSubmit={handleReservation} className="reservation-form">
+                <form id="reservation-form" onSubmit={handleReservation} className="reservation-form">
                   <Box className="form-row">
                     
                     <Box className="form-field-wrapper">
@@ -737,26 +738,28 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
                   </Box>
 
                   
-                  <Box sx={{ mb: 0 }}>
+                  <Box sx={{ mb: 3 }}>
                     <Typography className="field-label">How long are you staying?</Typography>
-                    <FormField
-                      select
-                      value={hours}
-                      onChange={(e) => setHours(e.target.value)}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <HourglassEmptyIcon className="form-icon" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    >
-                      {HOURS_OPTIONS.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </FormField>
+                    <div className="duration-chips-grid">
+                      {HOURS_OPTIONS.map((option) => {
+                        const isSelected = hours === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`duration-chip ${isSelected ? 'selected' : ''}`}
+                            onClick={() => setHours(option.value)}
+                          >
+                            <span className="duration-chip-title">
+                              {option.value === 12 ? '12 Hours' : `${option.value / 24} ${option.value === 24 ? 'Day' : 'Days'}`}
+                            </span>
+                            <span className="duration-chip-subtitle">
+                              ({option.value} Hrs)
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </Box>
 
                   
@@ -1185,6 +1188,52 @@ export default function DashboardPage({ user, onLogout, onReservationComplete })
           {cancelAlert.message}
         </Alert>
       </Snackbar>
+
+      {/* Mobile Sticky Bottom Summary Bar */}
+      {activeTab === 'book' && selectedRoom && (
+        <div className="mobile-sticky-summary-bar">
+          <div className="sticky-summary-info">
+            <Typography className="sticky-room-name">
+              {roomOptions.find(r => r.id === selectedRoom)?.name || 'Selected Room'}
+            </Typography>
+            <Typography className="sticky-price-value">
+              PHP {totalAmount.toLocaleString()}
+            </Typography>
+          </div>
+          <Button
+            type="submit"
+            form="reservation-form"
+            variant="contained"
+            className="sticky-book-btn"
+            disableElevation
+          >
+            Next
+          </Button>
+        </div>
+      )}
+
+      {/* Mobile Bottom Navigation */}
+      <div className="mobile-bottom-nav">
+        <button
+          type="button"
+          className={`mobile-bottom-nav-item ${activeTab === 'book' ? 'selected' : ''}`}
+          onClick={() => setActiveTab('book')}
+        >
+          <CalendarTodayIcon />
+          <span>Book Stay</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-bottom-nav-item ${activeTab === 'history' ? 'selected' : ''}`}
+          onClick={() => {
+            setActiveTab('history');
+            fetchMyBookings();
+          }}
+        >
+          <ReceiptIcon />
+          <span>My Stays</span>
+        </button>
+      </div>
     </ThemeProvider>
   );
 }

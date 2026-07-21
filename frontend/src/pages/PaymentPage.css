@@ -504,6 +504,124 @@
 }
 
 
+/* Mobile Summary Accordion Trigger */
+.mobile-summary-trigger {
+  display: none;
+  width: 100%;
+  background-color: rgba(153, 0, 0, 0.05);
+  border: 1.5px dashed #990000;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  cursor: pointer;
+  margin-bottom: 16px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.mobile-summary-trigger:hover {
+  background-color: rgba(153, 0, 0, 0.08);
+}
+
+.mobile-summary-trigger-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #990000;
+}
+
+/* Virtual Credit Card Styling */
+.virtual-card-wrapper {
+  width: 100%;
+  max-width: 320px;
+  margin: 8px auto 28px;
+  perspective: 1000px;
+}
+
+.virtual-card {
+  width: 100%;
+  height: 175px;
+  background: linear-gradient(135deg, #141414 0%, #3a0808 60%, #730000 100%);
+  border-radius: 12px;
+  padding: 20px;
+  box-sizing: border-box;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.virtual-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.virtual-card-chip {
+  width: 36px;
+  height: 26px;
+  background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.virtual-card-logo {
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 800 !important;
+  font-style: italic;
+  color: #ffffff;
+  font-size: 16px !important;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.virtual-card-number-row {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  letter-spacing: 2.5px;
+  margin-bottom: auto;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  text-align: left;
+}
+
+.virtual-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-family: 'Poppins', sans-serif;
+}
+
+.card-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  display: block;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+  text-align: left;
+}
+
+.card-value {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  display: block;
+  text-align: left;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.virtual-card-expires {
+  margin-left: auto;
+  margin-right: 16px;
+}
+
 @media (max-width: 768px) {
   .payment-header {
     padding: 0 20px;
@@ -517,21 +635,38 @@
     padding: 24px 16px;
   }
 
-  .payment-summary-card,
+  .mobile-summary-trigger {
+    display: block;
+  }
+
+  .payment-stack-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .payment-summary-card {
+    max-height: 0;
+    padding: 0 20px !important;
+    margin-top: -16px;
+    margin-bottom: 0;
+    overflow: hidden;
+    opacity: 0;
+    border: none !important;
+    box-shadow: none !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .payment-summary-card.expanded {
+    max-height: 1000px;
+    padding: 20px !important;
+    opacity: 1;
+    margin-bottom: 8px;
+    border: 1px solid var(--border) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+  }
+
   .payment-form-card {
-    padding: 20px;
-  }
-
-  .summary-panel-col {
-    order: 2; 
-  }
-
-  .form-panel-col {
-    order: 1;
-  }
-
-  .payment-selectors {
-    gap: 0;
+    padding: 24px 20px;
   }
 
   .pay-now-btn {

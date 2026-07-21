@@ -49,6 +49,8 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -260,7 +262,8 @@ export default function AdminDashboardPage({ user, onLogout }) {
   };
 
   
-  const [activeTab, setActiveTab] = useState('overview'); 
+  const [activeTab, setActiveTab] = useState('overview');
+  const [drawerOpen, setDrawerOpen] = useState(false); 
 
   
   const [reservations, setReservations] = useState([]);
@@ -1222,8 +1225,18 @@ export default function AdminDashboardPage({ user, onLogout }) {
     <ThemeProvider theme={ogosTheme}>
       <div className="admin-dashboard-viewport">
         
-        <div className="admin-sidebar">
+        {/* Sidebar Backdrop Overlay on Mobile */}
+        {drawerOpen && (
+          <div className="admin-drawer-backdrop" onClick={() => setDrawerOpen(false)} />
+        )}
+
+        <div className={`admin-sidebar ${drawerOpen ? 'open' : ''}`}>
           <div className="admin-sidebar-top">
+            {/* Mobile Close Button */}
+            <button className="admin-sidebar-close-btn" onClick={() => setDrawerOpen(false)}>
+              <CloseIcon />
+            </button>
+
             <div className="admin-logo-wrapper">
               <img src={logoImg} alt="Hotel Ogos Logo" className="admin-logo-img" />
             </div>
@@ -1235,42 +1248,42 @@ export default function AdminDashboardPage({ user, onLogout }) {
             <div className="admin-sidebar-menu">
               <div
                 className={`admin-menu-item ${activeTab === 'overview' ? 'active' : ''}`}
-                onClick={() => setActiveTab('overview')}
+                onClick={() => { setActiveTab('overview'); setDrawerOpen(false); }}
               >
                 <DashboardIcon fontSize="small" />
                 <span>Overview</span>
               </div>
               <div
                 className={`admin-menu-item ${activeTab === 'reservations' ? 'active' : ''}`}
-                onClick={() => setActiveTab('reservations')}
+                onClick={() => { setActiveTab('reservations'); setDrawerOpen(false); }}
               >
                 <ReceiptIcon fontSize="small" />
                 <span>Reservations</span>
               </div>
               <div
                 className={`admin-menu-item ${activeTab === 'rooms' ? 'active' : ''}`}
-                onClick={() => setActiveTab('rooms')}
+                onClick={() => { setActiveTab('rooms'); setDrawerOpen(false); }}
               >
                 <KingBedIcon fontSize="small" />
                 <span>Room Inventory</span>
               </div>
               <div
                 className={`admin-menu-item ${activeTab === 'guests' ? 'active' : ''}`}
-                onClick={() => setActiveTab('guests')}
+                onClick={() => { setActiveTab('guests'); setDrawerOpen(false); }}
               >
                 <PeopleIcon fontSize="small" />
                 <span>Guests Manager</span>
               </div>
               <div
                 className={`admin-menu-item ${activeTab === 'summaryReport' ? 'active' : ''}`}
-                onClick={() => setActiveTab('summaryReport')}
+                onClick={() => { setActiveTab('summaryReport'); setDrawerOpen(false); }}
               >
                 <AssessmentIcon fontSize="small" />
                 <span>Summary Report</span>
               </div>
               <div
                 className={`admin-menu-item ${activeTab === 'utilityBills' ? 'active' : ''}`}
-                onClick={() => setActiveTab('utilityBills')}
+                onClick={() => { setActiveTab('utilityBills'); setDrawerOpen(false); }}
               >
                 <WaterDropIcon fontSize="small" />
                 <span>Utility Bills</span>
@@ -1298,6 +1311,21 @@ export default function AdminDashboardPage({ user, onLogout }) {
         
         <div className="admin-content-area">
           
+          {/* Mobile Admin Header */}
+          <div className="mobile-admin-header">
+            <IconButton
+              className="admin-hamburger-btn"
+              onClick={() => setDrawerOpen(true)}
+              sx={{ color: '#990000', p: 1 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <div className="mobile-admin-header-logo-group">
+              <img src={logoImg} alt="Hotel Ogos Logo" className="mobile-admin-header-logo" />
+              <Typography className="mobile-admin-header-title">Hotel Ogos</Typography>
+            </div>
+          </div>
+
           <div className="admin-header">
             <div>
               <h2 className="admin-header-title">
@@ -1317,7 +1345,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                 {activeTab === 'utilityBills' && 'Track water usage, view billing history, and pay water bills directly to the Aquabill System.'}
               </p>
             </div>
-            <div className="admin-badge" style={{ margin: 0, padding: '6px 14px', fontSize: '11px', color: '#1a1a1a', backgroundColor: '#ffd700' }}>
+            <div className="admin-badge hide-on-mobile" style={{ margin: 0, padding: '6px 14px', fontSize: '11px', color: '#1a1a1a', backgroundColor: '#ffd700' }}>
               Bayombong, Nueva Vizcaya
             </div>
           </div>
@@ -1569,7 +1597,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                     </div>
                   </div>
 
-                  <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e4e7', borderRadius: '8px' }}>
+                  <TableContainer component={Paper} elevation={0} className="admin-desktop-table" sx={{ border: '1px solid #e5e4e7', borderRadius: '8px' }}>
                     <Table size="medium">
                       <TableHead>
                         <TableRow>
@@ -1620,7 +1648,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                               </TableCell>
                               <TableCell>
                                 <Typography sx={{ fontWeight: 600, color: '#990000', fontSize: '14px' }}>
-                                  ₱{res.totalAmount.toLocaleString()}
+                                  PHP{res.totalAmount.toLocaleString()}
                                 </Typography>
                                 
                               </TableCell>
@@ -1711,6 +1739,120 @@ export default function AdminDashboardPage({ user, onLogout }) {
                       </TableBody>
                     </Table>
                   </TableContainer>
+
+                  {/* Mobile-friendly Reservations Card List */}
+                  <div className="admin-mobile-list reservations-mobile-list">
+                    {filteredReservations.map((res) => {
+                      const status = getReservationStatus(res);
+                      const userDetails = res.user || { firstName: 'Bisita NV', lastName: 'Guest', email: 'bisitanvguest@bisitanv.com', username: 'bisitanvguest' };
+                      const guestName = `${userDetails.firstName} ${userDetails.lastName}`;
+                      const roomName = res.room?.name || res.roomType.replace('_', ' ');
+
+                      return (
+                        <div key={res._id} className={`mobile-admin-card reservation-card-${status}`}>
+                          <div className="mobile-admin-card-header">
+                            <div>
+                              <Typography className="mobile-card-title">{guestName}</Typography>
+                              <Typography className="mobile-card-subtitle">{userDetails.username} | {userDetails.email}</Typography>
+                            </div>
+                            <span className={`status-badge ${status}`}>{status}</span>
+                          </div>
+
+                          <div className="mobile-admin-card-body">
+                            <Typography className="mobile-card-body-text">
+                              <strong>Room Booked:</strong> {roomName} {res.roomNumber && `(#${res.roomNumber})`}
+                            </Typography>
+                            <Typography className="mobile-card-body-text">
+                              <strong>Stay Schedule:</strong> In: {new Date(res.checkInDate).toLocaleDateString()} at {formatTimeToAMPM(res.checkInTime)} | Out: {getCheckoutDateTimeDisplay(res)} ({res.hours} Hours)
+                            </Typography>
+                            <Typography className="mobile-card-body-text">
+                              <strong>Price:</strong> <span style={{ color: '#990000', fontWeight: 700 }}>PHP {res.totalAmount.toLocaleString()}</span>
+                            </Typography>
+                            {res.notes && (
+                              <Typography className="mobile-card-body-text italic-notes">
+                                <strong>Special Requests:</strong> "{res.notes}"
+                              </Typography>
+                            )}
+                          </div>
+
+                          <div className="mobile-admin-card-actions">
+                            {res.paymentDetails?.status === 'pending' && (
+                              <Button
+                                variant="contained"
+                                size="small"
+                                color="success"
+                                startIcon={<CheckCircleIcon />}
+                                sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontSize: '11px', mr: 1 }}
+                                onClick={() => {
+                                  setStatusConfirmTarget({
+                                    id: res._id,
+                                    status: 'paid',
+                                    guestName,
+                                    roomName
+                                  });
+                                  setOpenStatusConfirm(true);
+                                }}
+                              >
+                                Confirm Paid
+                              </Button>
+                            )}
+                            {res.paymentDetails?.status !== 'cancelled' && (
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                color="error"
+                                startIcon={<CancelIcon />}
+                                sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontSize: '11px', mr: 1 }}
+                                onClick={() => {
+                                  setStatusConfirmTarget({
+                                    id: res._id,
+                                    status: 'cancelled',
+                                    guestName,
+                                    roomName
+                                  });
+                                  setOpenStatusConfirm(true);
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            )}
+                            {res.paymentDetails?.status === 'cancelled' && (
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<CheckCircleIcon />}
+                                sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontSize: '11px', borderColor: '#888', color: '#666', mr: 1 }}
+                                onClick={() => {
+                                  setStatusConfirmTarget({
+                                    id: res._id,
+                                    status: 'pending',
+                                    guestName,
+                                    roomName
+                                  });
+                                  setOpenStatusConfirm(true);
+                                }}
+                              >
+                                Reactivate
+                              </Button>
+                            )}
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => handleOpenDeleteConfirm('reservation', res)}
+                              sx={{ ml: 'auto' }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {filteredReservations.length === 0 && (
+                      <div className="admin-mobile-empty-state">
+                        No reservations matching filters found.
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -1849,7 +1991,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                     </div>
                   </div>
 
-                  <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e4e7', borderRadius: '8px' }}>
+                  <TableContainer component={Paper} elevation={0} className="admin-desktop-table" sx={{ border: '1px solid #e5e4e7', borderRadius: '8px' }}>
                     <Table size="medium">
                       <TableHead>
                         <TableRow>
@@ -1926,6 +2068,72 @@ export default function AdminDashboardPage({ user, onLogout }) {
                       </TableBody>
                     </Table>
                   </TableContainer>
+
+                  {/* Mobile-friendly Guests Card List */}
+                  <div className="admin-mobile-list guests-mobile-list">
+                    {filteredUsers.map((u) => (
+                      <div key={u._id} className="mobile-admin-card guest-mobile-card">
+                        <div className="mobile-admin-card-header">
+                          <div>
+                            <Typography className="mobile-card-title">{u.firstName} {u.lastName} {u._id === user?.id && ' (You)'}</Typography>
+                            <Typography className="mobile-card-subtitle">{u.username} | {u.email}</Typography>
+                          </div>
+                          <span className={`role-badge ${u.role}`}>{u.role}</span>
+                        </div>
+
+                        <div className="mobile-admin-card-body">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '13px', color: '#666', fontFamily: "'Poppins', sans-serif" }}>Role:</span>
+                            <Switch
+                              size="small"
+                              checked={u.role === 'admin'}
+                              onChange={() => handleToggleUserRole(u)}
+                              disabled={u._id === user?.id}
+                              color="primary"
+                            />
+                            <span style={{
+                              fontSize: '12.5px',
+                              fontFamily: "'Poppins', sans-serif",
+                              fontWeight: u.role === 'admin' ? 600 : 400,
+                              color: u.role === 'admin' ? '#990000' : '#666'
+                            }}>
+                              {u.role === 'admin' ? 'Admin' : 'Guest'}
+                            </span>
+                          </div>
+                          <Typography className="mobile-card-body-text">
+                            <strong>Joined Date:</strong> {new Date(u.createdAt || Date.now()).toLocaleDateString()}
+                          </Typography>
+                        </div>
+
+                        <div className="mobile-admin-card-actions">
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="primary"
+                            startIcon={<EditIcon />}
+                            sx={{ textTransform: 'none', fontFamily: "'Poppins', sans-serif", fontSize: '11px', mr: 1 }}
+                            onClick={() => handleOpenEditUser(u)}
+                          >
+                            Edit
+                          </Button>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            disabled={u._id === user?.id}
+                            onClick={() => handleOpenDeleteConfirm('user', u)}
+                            sx={{ ml: 'auto' }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredUsers.length === 0 && (
+                      <div className="admin-mobile-empty-state">
+                        No registered guest accounts found.
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -2067,7 +2275,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                             <div className="admin-card-header">
                               <h4 className="admin-card-title">Recent Transactions Ledger (Latest 50)</h4>
                             </div>
-                            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e4e7', borderRadius: '8px' }}>
+                            <TableContainer component={Paper} elevation={0} className="admin-desktop-table" sx={{ border: '1px solid #e5e4e7', borderRadius: '8px' }}>
                               <Table size="medium">
                                 <TableHead>
                                   <TableRow>
@@ -2100,7 +2308,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                         {tx.hours} Hours Stay
                                       </TableCell>
                                       <TableCell sx={{ fontWeight: 600, color: '#990000' }}>
-                                        ₱{tx.amount?.toLocaleString()}
+                                        PHP{tx.amount?.toLocaleString()}
                                       </TableCell>
                                       <TableCell align="center">
                                         <span className={`status-badge ${tx.status || 'pending'}`}>
@@ -2119,6 +2327,42 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                 </TableBody>
                               </Table>
                             </TableContainer>
+
+                            {/* Mobile-friendly Recent Transactions List */}
+                            <div className="admin-mobile-list ledger-mobile-list">
+                              {reportTransactions.map((tx) => (
+                                <div key={tx._id} className="mobile-admin-card ledger-mobile-card">
+                                  <div className="mobile-admin-card-header">
+                                    <div>
+                                      <Typography className="mobile-card-title">{tx.guestName}</Typography>
+                                      <Typography className="mobile-card-subtitle">{tx.guestEmail}</Typography>
+                                    </div>
+                                    <span className={`status-badge ${tx.status || 'pending'}`}>{tx.status || 'pending'}</span>
+                                  </div>
+                                  <div className="mobile-admin-card-body">
+                                    <Typography className="mobile-card-body-text">
+                                      <strong>Room:</strong> {tx.roomType.replace('_', ' ').toUpperCase()}
+                                    </Typography>
+                                    <Typography className="mobile-card-body-text">
+                                      <strong>Stay:</strong> {tx.hours} Hours Stay
+                                    </Typography>
+                                    <Typography className="mobile-card-body-text">
+                                      <strong>Paid On:</strong> {new Date(tx.timestamp || tx.createdAt).toLocaleDateString()}
+                                    </Typography>
+                                  </div>
+                                  <div className="mobile-admin-card-footer" style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #f0edf2', paddingTop: '8px', marginTop: '8px' }}>
+                                    <Typography className="mobile-card-price-value" style={{ fontWeight: 700, color: '#990000', fontSize: '15px', fontFamily: "'Poppins', sans-serif" }}>
+                                      PHP {tx.amount?.toLocaleString()}
+                                    </Typography>
+                                  </div>
+                                </div>
+                              ))}
+                              {reportTransactions.length === 0 && (
+                                <div className="admin-mobile-empty-state">
+                                  No recent transactions recorded.
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}
@@ -2184,7 +2428,7 @@ export default function AdminDashboardPage({ user, onLogout }) {
                           </div>
                         </div>
 
-                        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e4e7', borderRadius: '8px', mt: 2 }}>
+                        <TableContainer component={Paper} elevation={0} className="admin-desktop-table" sx={{ border: '1px solid #e5e4e7', borderRadius: '8px', mt: 2 }}>
                           <Table size="medium">
                             <TableHead>
                               <TableRow>
@@ -2215,13 +2459,13 @@ export default function AdminDashboardPage({ user, onLogout }) {
                                         {bill.consumption} m³
                                       </TableCell>
                                       <TableCell sx={{ fontWeight: 500 }}>
-                                        ₱{bill.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        PHP{bill.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                       </TableCell>
                                       <TableCell sx={{ color: '#2e7d32' }}>
-                                        ₱{bill.amountPaid?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        PHP{bill.amountPaid?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                       </TableCell>
                                       <TableCell sx={{ fontWeight: 600, color: bill.balance > 0 ? '#990000' : '#2e7d32' }}>
-                                        ₱{bill.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        PHP{bill.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                       </TableCell>
                                       <TableCell align="center">
                                         <span className={`status-badge ${bill.status?.toLowerCase() === 'paid' ? 'paid' : bill.status?.toLowerCase() === 'partial' ? 'pending' : 'cancelled'}`}>
@@ -2263,6 +2507,73 @@ export default function AdminDashboardPage({ user, onLogout }) {
                             </TableBody>
                           </Table>
                         </TableContainer>
+
+                        {/* Mobile-friendly Utility Bills List */}
+                        <div className="admin-mobile-list utility-mobile-list" style={{ marginTop: '16px' }}>
+                          {utilityBills
+                            .filter(bill => billFilter === 'All' || bill.status === billFilter)
+                            .map((bill) => {
+                              const billingPeriodMonth = new Date(0, bill.billingPeriod.month - 1).toLocaleString('default', { month: 'long' });
+                              return (
+                                <div key={bill._id} className="mobile-admin-card utility-mobile-card">
+                                  <div className="mobile-admin-card-header">
+                                    <div>
+                                      <Typography className="mobile-card-title">Bill #{bill.billNumber}</Typography>
+                                      <Typography className="mobile-card-subtitle">
+                                        Period: {billingPeriodMonth} {bill.billingPeriod.year}
+                                      </Typography>
+                                    </div>
+                                    <span className={`status-badge ${bill.status?.toLowerCase() === 'paid' ? 'paid' : bill.status?.toLowerCase() === 'partial' ? 'pending' : 'cancelled'}`}>
+                                      {bill.status}
+                                    </span>
+                                  </div>
+
+                                  <div className="mobile-admin-card-body">
+                                    <Typography className="mobile-card-body-text">
+                                      <strong>Consumption:</strong> {bill.consumption} m³
+                                    </Typography>
+                                    <Typography className="mobile-card-body-text">
+                                      <strong>Total Charge:</strong> PHP {bill.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </Typography>
+                                    <Typography className="mobile-card-body-text">
+                                      <strong>Amount Paid:</strong> PHP {bill.amountPaid?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </Typography>
+                                    <Typography className="mobile-card-body-text">
+                                      <strong>Remaining Balance:</strong> <span style={{ fontWeight: 600, color: bill.balance > 0 ? '#990000' : '#2e7d32' }}>PHP {bill.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                    </Typography>
+                                  </div>
+
+                                  <div className="mobile-admin-card-actions" style={{ borderTop: '1px solid #f0edf2', paddingTop: '8px', marginTop: '8px' }}>
+                                    {bill.status !== 'Paid' ? (
+                                      <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={() => handleOpenPayModal(bill)}
+                                        startIcon={<AccountBalanceWalletIcon />}
+                                        sx={{
+                                          textTransform: 'none',
+                                          fontFamily: "'Poppins', sans-serif",
+                                          fontSize: '11px',
+                                          fontWeight: 600,
+                                          backgroundColor: '#990000',
+                                          '&:hover': { backgroundColor: '#730000' }
+                                        }}
+                                      >
+                                        Pay Bill
+                                      </Button>
+                                    ) : (
+                                      <span style={{ fontSize: '12px', color: '#888', fontStyle: 'italic', fontFamily: "'Poppins', sans-serif" }}>Settled</span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          {utilityBills.filter(bill => billFilter === 'All' || bill.status === billFilter).length === 0 && (
+                            <div className="admin-mobile-empty-state">
+                              No bills found matching status filter.
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </>
                   )}

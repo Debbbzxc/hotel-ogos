@@ -1,22 +1,33 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Hotel Ogos Brand Colors */
+  --brand-red: #D31027;
+  --dark-red: #990000;
+  --brand-gold: #FFD700;
+  --charcoal: #1A1A1A;
+  --white: #FFFFFF;
+  --soft-grey: #E5E4E7;
+  --border-grey: #eae9ec;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Theme mappings (Light Mode Default) */
+  --text: #555555;
+  --text-h: #1A1A1A;
+  --bg: #f9f8fa;
+  --card-bg: #FFFFFF;
+  --border: var(--soft-grey);
+  --code-bg: #f4f3ec;
+  --accent: var(--dark-red);
+  --accent-bg: rgba(153, 0, 0, 0.05);
+  --accent-border: rgba(153, 0, 0, 0.2);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow: rgba(0, 0, 0, 0.06) 0 8px 24px, rgba(0, 0, 0, 0.04) 0 2px 8px;
+  --shadow-hover: rgba(153, 0, 0, 0.08) 0 12px 32px, rgba(0, 0, 0, 0.05) 0 4px 12px;
+
+  --sans: 'Poppins', system-ui, -apple-system, sans-serif;
+  --heading: 'Poppins', system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  font: 16px/150% var(--sans);
+  letter-spacing: 0.15px;
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
@@ -26,7 +37,10 @@
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
-    font-size: 16px;
+    font-size: 15px;
+  }
+  @media (max-width: 480px) {
+    font-size: 14.5px;
   }
 }
 
@@ -34,15 +48,16 @@
   :root {
     --text: #9ca3af;
     --text-h: #f3f4f6;
-    --bg: #16171d;
+    --bg: #111216;
+    --card-bg: #1a1b21;
     --border: #2e303a;
     --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
+    --accent: #ff4d4d;
+    --accent-bg: rgba(211, 16, 39, 0.15);
+    --accent-border: rgba(211, 16, 39, 0.4);
     --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --shadow-hover: rgba(0, 0, 0, 0.5) 0 15px 25px -5px, rgba(0, 0, 0, 0.3) 0 6px 12px;
   }
 
   #social .button-icon {
@@ -52,6 +67,9 @@
 
 body {
   margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
 }
 
 #root {
@@ -63,32 +81,38 @@ body {
 }
 
 h1,
-h2 {
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--heading);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-h);
+  margin-top: 0;
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+  font-size: 40px;
+  letter-spacing: -1px;
+  margin: 24px 0;
+  @media (max-width: 768px) {
+    font-size: 32px;
   }
 }
+
 h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+  font-size: 22px;
+  line-height: 120%;
+  letter-spacing: -0.2px;
+  margin: 0 0 12px;
+  @media (max-width: 768px) {
+    font-size: 19px;
   }
 }
+
 p {
-  margin: 0;
+  margin: 0 0 12px;
 }
 
 code,
@@ -100,8 +124,8 @@ code,
 }
 
 code {
-  font-size: 15px;
-  line-height: 135%;
+  font-size: 14px;
+  line-height: 140%;
   padding: 4px 8px;
   background: var(--code-bg);
 }
